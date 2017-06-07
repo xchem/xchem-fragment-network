@@ -6,6 +6,7 @@ def _get_waters(lines):
     """Helper function to extract waters from a PDB file"""
     return [line for line in lines]# if line[17:20] == "HOH"]
 
+
 def _get_water_coords(waters):
     """Helper function to get the coordinates from a load of waters."""
     rd_waters = Chem.MolFromPDBBlock("\n".join(waters))
@@ -25,7 +26,6 @@ def _get_water_coords(waters):
     return out_list
 
 
-### TODO Ligands
 def parse_ligands(input_file, input_type="sdf"):
     """
     Function to parse a series of ligands - return RDKit mols.
@@ -37,7 +37,6 @@ def parse_ligands(input_file, input_type="sdf"):
     return mols
 
 
-### TODO Waters
 def parse_waters(input_pdb, input_mol=None, max_dist=10.0):
     """
     Function to parse a series of waters - return waters.
@@ -48,8 +47,6 @@ def parse_waters(input_pdb, input_mol=None, max_dist=10.0):
     # First just get the waters from the file
     waters = _get_waters(open(input_pdb).readlines())
     water_coords = _get_water_coords(waters)
-
-
 
 
 

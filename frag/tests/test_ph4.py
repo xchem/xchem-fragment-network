@@ -30,12 +30,17 @@ M  END
 
     def test_ph4_parser(self):
         """
-        Test the pharmacophore generation
+        Test the pharmacophore generation.
+        Need more test cases
         :return:
         """
         rdmol = Chem.MolFromMolBlock(self.sdf_data)
         rdkit_ph4 = RDKitPh4()
         feats = rdkit_ph4.generate_ph4_for_mol(rdmol=rdmol)
         self.assertEqual(len(feats),5)
+        self.assertLessEqual([x[3] for x in feats],
+                             ['SingleAtomDonor', 'BasicGroup', 'Arom6', 'ThreeWayAttach', 'RH6_6'])
+        self.assertAlmostEqual([x[1] for x in feats][1],
+                               -0.195)
 
 

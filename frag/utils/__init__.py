@@ -1,1 +1,2 @@
-from default_pharma import RDKitPh4
+from rdkit_pharma import RDKitPh4
+from rdkit_parser import parse_waters,parse_ligands
