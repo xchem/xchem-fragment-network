@@ -62,10 +62,19 @@ def get_fragments(input_mol):
 
 
 def get_ring_ring_splits(input_mol):
+    """
+    Get and break Atom-Atom pairs in two different rings.
+    :param input_mol:
+    :return:
+    """
+    #TODO Fix for fused e.g.s
     RI = input_mol.GetRingInfo()
     rings = RI.AtomRings()
+    out_mols = []
+    bonds = [item for sublist in RI.BondRings() for item in sublist]
     bs = []
     for bond in input_mol.GetBonds():
+        if bond.GetIdx() in bonds: continue
         id_one = bond.GetBeginAtomIdx()
         id_two = bond.GetEndAtomIdx()
         # Now find all pairs that are in both
@@ -77,8 +86,13 @@ def get_ring_ring_splits(input_mol):
                     if id_two in ring_two:
                         bs.append(bond.GetIdx())
     if bs:
-        nm = Chem.FragmentOnBonds(input_mol,bs,dummyLabels=[(1,1)])
-        return [x.replace("1*","Xe") for x in Chem.MolToSmiles(nm,isomericSmiles=True).split(".")]
+        for b in bs:
+            nm = Chem.FragmentOnBonds(input_mol,[b],dummyLabels=[(1,1)])
+            # Only takes first
+            # TODO Take all possibilities
+            mols = [x.replace("1*", "Xe") for x in Chem.MolToSmiles(nm, isomericSmiles=True).split(".")]
+            out_mols.append(mols)
+        return out_mols
 
 
 def make_child_mol(rebuilt_smi):
@@ -105,6 +119,7 @@ def add_child_and_edge(new_list, input_node, excluded_smi,ring_ring=False):
     input_node.EDGES.append(new_edge)
     new_node,is_new = create_or_retrieve_node(child_smi)
     new_node.EDGES.append(new_edge)
+    new_edge.NODES = [input_node, new_node]
     # Now generate the children for this too
     if is_new:
         create_children(new_node)
@@ -128,7 +143,8 @@ def create_children(input_node):
     # Get all ring-ring splits
     ring_ring_splits = get_ring_ring_splits(input_node.RDMol)
     if ring_ring_splits:
-        add_child_and_edge(ring_ring_splits,input_node,"[Xe]",ring_ring=True)
+        for ring_ring_split in ring_ring_splits:
+            add_child_and_edge(ring_ring_split,input_node,"[Xe]",ring_ring=True)
     fragments = get_fragments(input_node.RDMol)
     if not fragments:
         return
@@ -198,6 +214,8 @@ class Node(object):
         return self.SMILES==other.SMILES
 
     def __init__(self,input_mol):
+        if type(input_mol) == str:
+            input_mol = Chem.MolFromSmiles(input_mol)
         self.SMILES = Chem.MolToSmiles(input_mol, isomericSmiles=True)
         self.HAC = input_mol.GetNumHeavyAtoms()
         self.RAC,split_indices = get_num_ring_atoms(input_mol)
@@ -206,31 +224,36 @@ class Node(object):
         self.EDGES = []
 
 
+def get_type(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol.HasSubstructMatch(Chem.MolFromSmarts("[*;R]")):
+        return "RING"
+    return "FG"
+
 class Edge(object):
     """
     A Class to hold an edge
     """
     def __init__(self, excluded_smi,rebuilt_smi):
         self.EXCLUDE_SMILES = excluded_smi
+        self.EXCLUDE_TYPE = get_type(excluded_smi)
         self.REBUILT_SMILES = rebuilt_smi
         self.REBUILT_RING_SMILES = simplified_graph(rebuilt_smi)
+        self.REBUILT_TYPE = get_type(rebuilt_smi)
         self.EXCLUDED_RING_SMILES = simplified_graph(excluded_smi)
+        self.NODES = []
 
 
-def create_node_from_smiles(input_smiles):
-    """
-    :param input_smiles:
-    :return:
-    """
-    mol = Chem.MolFromSmiles(input_smiles)
-    return Node(mol)
 
 
 if __name__ == "__main__":
-    node = create_node_from_smiles("Oc1ccc(cc1)c2ccccc2")
+
+    node = Node("Oc1ccc(cc1)c2ccccc2c3ccccc3")
     node_list.append(node)
-    out_results = create_children(node)
+    create_children(node)
     for node in node_list:
         print "NODE", node.SMILES, str(node.HAC), str(node.RAC), node.RING_SMILES
         for edge in node.EDGES:
-            print "EDGE",edge.EXCLUDE_SMILES,edge.REBUILT_SMILES,edge.EXCLUDED_RING_SMILES,edge.REBUILT_RING_SMILES
+            print "EDGE",edge.NODES[0].SMILES,edge.NODES[1].SMILES,\
+                edge.EXCLUDE_TYPE, edge.EXCLUDE_SMILES,edge.EXCLUDED_RING_SMILES,\
+                edge.REBUILT_TYPE,edge.REBUILT_SMILES,edge.REBUILT_RING_SMILES

@@ -47,7 +47,18 @@ def parse_waters(input_pdb, input_mol=None, max_dist=10.0):
     # First just get the waters from the file
     waters = _get_waters(open(input_pdb).readlines())
     water_coords = _get_water_coords(waters)
-
+    return  water_coords
 
 
 ### TODO Residues
+
+def parse_residues(input_pdb, input_mol=None, max_dist=10.0):
+    """
+    Function to parse a series of PDB files of proteins.
+    :param input_pdb: the input PDB files
+    :return: a dict (Key Residue -> value list of molecules)
+    """
+    # First just get the waters from the file
+    waters = _get_waters(open(input_pdb).readlines())
+    water_coords = _get_water_coords(waters)
+    return  water_coords
