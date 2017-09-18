@@ -1,42 +1,6 @@
 from rdkit import Chem
-
-node_list = []
-def get_num_ring_atoms(input_mol):
-    """
-    Get the number of ring atoms
-    :param input_mol:
-    :return:
-    """
-    num_ring_atoms = 0
-    split_index =0
-    split_indices = []
-    for atom in input_mol.GetAtoms():
-        if atom.IsInRing():
-            num_ring_atoms+=1
-        else:
-            split_indices.append(split_index)
-        split_index += 1
-    return num_ring_atoms,split_indices
-
-
-def simplified_graph(input_smiles):
-    """
-    The simplified graph representation for the edge uses the daylight
-function dt_molgraph to
-1) set all bond orders to one, 2) remove aromaticity, 3??"set the hydrogen count,
-4) remove charges and set masses to zero. 5)  Additionally we set every ring atom element to carbon
-    :param input_smiles:
-    :return:
-    """
-    mol = Chem.MolFromSmiles(input_smiles)
-    for atom in mol.GetAtoms():
-        atom.SetFormalCharge(0)
-        if atom.IsInRing():
-            atom.SetAtomicNum(6)
-            atom.SetIsAromatic(False)
-        for bond in atom.GetBonds():
-            bond.SetBondType(Chem.BondType.SINGLE)
-    return Chem.MolToSmiles(mol)
+from models import NodeHolder,Edge
+from utils import make_child_mol, get_info
 
 
 def get_fragments(input_mol):
@@ -89,22 +53,12 @@ def get_ring_ring_splits(input_mol):
         for b in bs:
             nm = Chem.FragmentOnBonds(input_mol,[b],dummyLabels=[(1,1)])
             # Only takes first
-            # TODO Take all possibilities
             mols = [x.replace("1*", "Xe") for x in Chem.MolToSmiles(nm, isomericSmiles=True).split(".")]
             out_mols.append(mols)
         return out_mols
 
 
-def make_child_mol(rebuilt_smi):
-    """
-    Make the child molecule
-    :param rebuilt_smi:
-    :return:
-    """
-    return Chem.CanonSmiles(rebuilt_smi.replace("[Xe]","[H]"))
-
-
-def add_child_and_edge(new_list, input_node, excluded_smi,ring_ring=False):
+def add_child_and_edge(new_list, input_node, excluded_smi, node_holder, ring_ring=False):
     """
     :param input_pair:
     :return:
@@ -115,26 +69,14 @@ def add_child_and_edge(new_list, input_node, excluded_smi,ring_ring=False):
         rebuilt_smi = recombine_edges(new_list)
     child_smi = make_child_mol(rebuilt_smi)
     # Now generate the edges with input and this node
-    new_edge = Edge(excluded_smi, make_child_mol(rebuilt_smi))
-    input_node.EDGES.append(new_edge)
-    new_node,is_new = create_or_retrieve_node(child_smi)
-    new_node.EDGES.append(new_edge)
-    new_edge.NODES = [input_node, new_node]
+    new_node,is_new = node_holder.create_or_retrieve_node(child_smi)
+    node_holder.edge_list.append(Edge(excluded_smi, child_smi,input_node, new_node))
     # Now generate the children for this too
     if is_new:
-        create_children(new_node)
+        create_children(new_node, node_holder)
 
 
-def create_or_retrieve_node(child_smi):
-    new_node = Node(Chem.MolFromSmiles(child_smi))
-    new_list = [x for x in node_list if x == new_node]
-    if new_list:
-        return new_list[0],False
-    node_list.append(new_node)
-    return new_node,True
-
-
-def create_children(input_node):
+def create_children(input_node, node_holder):
     """
     Create a series of edges from an input molecule. Iteratively
     :param input_node:
@@ -144,7 +86,7 @@ def create_children(input_node):
     ring_ring_splits = get_ring_ring_splits(input_node.RDMol)
     if ring_ring_splits:
         for ring_ring_split in ring_ring_splits:
-            add_child_and_edge(ring_ring_split,input_node,"[Xe]",ring_ring=True)
+            add_child_and_edge(ring_ring_split,input_node,"[Xe]", node_holder,ring_ring=True)
     fragments = get_fragments(input_node.RDMol)
     if not fragments:
         return
@@ -156,17 +98,8 @@ def create_children(input_node):
                 excluded_smi = item
                 continue
             new_list.append(item)
-            add_child_and_edge(new_list, input_node, excluded_smi)
+            add_child_and_edge(new_list, input_node, excluded_smi, node_holder)
 
-
-
-def get_info(atom):
-    """
-    Get the needed info for an atom
-    :param atom:
-    :return:
-    """
-    return [atom.GetIdx(),atom.GetNeighbors()[0].GetIdx()]
 
 
 def recombine_edges(output_edges):
@@ -206,54 +139,14 @@ def recombine_edges(output_edges):
     return Chem.MolToSmiles(mw)
 
 
-class Node(object):
-    """
-    A Class to hold a Node on the graph
-    """
-    def __eq__(self, other):
-        return self.SMILES==other.SMILES
-
-    def __init__(self,input_mol):
-        if type(input_mol) == str:
-            input_mol = Chem.MolFromSmiles(input_mol)
-        self.SMILES = Chem.MolToSmiles(input_mol, isomericSmiles=True)
-        self.HAC = input_mol.GetNumHeavyAtoms()
-        self.RAC,split_indices = get_num_ring_atoms(input_mol)
-        self.RING_SMILES = simplified_graph(self.SMILES)
-        self.RDMol = input_mol
-        self.EDGES = []
-
-
-def get_type(smiles):
-    mol = Chem.MolFromSmiles(smiles)
-    if mol.HasSubstructMatch(Chem.MolFromSmarts("[*;R]")):
-        return "RING"
-    return "FG"
-
-class Edge(object):
-    """
-    A Class to hold an edge
-    """
-    def __init__(self, excluded_smi,rebuilt_smi):
-        self.EXCLUDE_SMILES = excluded_smi
-        self.EXCLUDE_TYPE = get_type(excluded_smi)
-        self.REBUILT_SMILES = rebuilt_smi
-        self.REBUILT_RING_SMILES = simplified_graph(rebuilt_smi)
-        self.REBUILT_TYPE = get_type(rebuilt_smi)
-        self.EXCLUDED_RING_SMILES = simplified_graph(excluded_smi)
-        self.NODES = []
-
-
-
 
 if __name__ == "__main__":
 
-    node = Node("Oc1ccc(cc1)c2ccccc2c3ccccc3")
-    node_list.append(node)
-    create_children(node)
-    for node in node_list:
-        print "NODE", node.SMILES, str(node.HAC), str(node.RAC), node.RING_SMILES
-        for edge in node.EDGES:
-            print "EDGE",edge.NODES[0].SMILES,edge.NODES[1].SMILES,\
-                edge.EXCLUDE_TYPE, edge.EXCLUDE_SMILES,edge.EXCLUDED_RING_SMILES,\
-                edge.REBUILT_TYPE,edge.REBUILT_SMILES,edge.REBUILT_RING_SMILES
+    node_holder = NodeHolder()
+    node, is_node = node_holder.create_or_retrieve_node("Cc3sc1-n2c(C)nnc2C(CC(=O)OC(C)(C)C)N=C(c1c3C)c4ccc(Cl)cc4")
+    if is_node:
+        create_children(node, node_holder)
+    for node in node_holder.node_list:
+        print node
+    for edge in node_holder.get_edges():
+        print edge
