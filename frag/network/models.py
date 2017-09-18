@@ -81,3 +81,18 @@ class Edge(object):
         return "".join(["EDGE"," ", self.NODES[0].SMILES," ", self.NODES[1].SMILES," ", \
         self.EXCLUDE_TYPE,"|", self.EXCLUDE_SMILES,"|", self.EXCLUDED_RING_SMILES,"|", \
         self.REBUILT_TYPE,"|", self.REBUILT_SMILES,"|", self.REBUILT_RING_SMILES])
+
+
+class Attr(object):
+    """
+    A Class of attributes
+    """
+
+    def __init__(self, smiles, property_list):
+        self.SMILES = smiles
+        self.PROP_LIST = property_list
+
+    def __str__(self):
+        tot_list=  ["ATTR",self.SMILES]
+        tot_list.extend(self.PROP_LIST)
+        return " ".join(tot_list)

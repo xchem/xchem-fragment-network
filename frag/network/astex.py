@@ -1,6 +1,7 @@
 from rdkit import Chem
-from models import NodeHolder,Edge
+from models import NodeHolder,Edge,Attr
 from utils import make_child_mol, rebuild_smi,get_fragments
+import argparse,os
 
 
 def get_ring_ring_splits(input_mol):
@@ -77,22 +78,42 @@ def create_children(input_node, node_holder):
             new_list.append(item)
         add_child_and_edge(new_list, input_node, excluded_smi, node_holder)
 
-
-if __name__ == "__main__":
-
-    smiles = [x.split()[1] for x in open("../tests/data/attributes.txt").readlines()]
-    smiles = ["Oc1ccc(cc1)c2ccccc2"]
-    node_holder = NodeHolder()
-    # Create the nodes and test with output
-    for smile in smiles:
-        node, is_node = node_holder.create_or_retrieve_node(smile)
-        if is_node:
-            create_children(node, node_holder)
-    out_f = open("out_nodes.txt","w")
+def write_data(output_dir, node_holder, attrs):
+    out_f = open(os.path.join(output_dir,"nodes.txt"),"w")
     for node in node_holder.node_list:
         out_f.write(str(node))
         out_f.write("\n")
-    out_f = open("out_edges.txt","w")
+    out_f = open(os.path.join(output_dir,"edges.txt"),"w")
     for edge in node_holder.get_edges():
         out_f.write(str(edge))
         out_f.write("\n")
+    out_f = open(os.path.join(output_dir,"attributes.txt"),"w")
+    for attr in attrs:
+        out_f.write(str(attr))
+        out_f.write("\n")
+
+def build_network(attrs):
+    node_holder = NodeHolder()
+    # Create the nodes and test with output
+    for attr in attrs:
+        node, is_node = node_holder.create_or_retrieve_node(attr.SMILES)
+        if is_node:
+            create_children(node, node_holder)
+    return node_holder
+
+
+if __name__ == "__main__":
+
+    # Read in a SD or SMILES file - then write out into a specified directory
+
+    parser = argparse.ArgumentParser(description='Convert a SMILES or SDFile to input for Astex Fragment network.')
+    parser.add_argument('--input')
+    parser.add_argument('--output')
+    args = parser.parse_args()
+    attrs = [Attr(Chem.MolToSmiles(x,isomericSmiles=True),["1", "2"]) for x in Chem.SDMolSupplier(args.input)]
+    if not os.path.isdir(args.output):
+        os.mkdir(args.output)
+    # Build the network
+    node_holder = build_network(attrs)
+    # Write the data out
+    write_data(args.output,node_holder,attrs)
