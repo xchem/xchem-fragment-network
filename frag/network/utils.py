@@ -1,5 +1,27 @@
 from rdkit import Chem
 
+
+def get_fragments(input_mol):
+    """
+    Find the frgments for a given molecule
+    :param input_mol:
+    :return:
+    """
+    smarts_pattern = "[*;R]-;!@[*]"
+    bond_indices = input_mol.GetSubstructMatches(Chem.MolFromSmarts(smarts_pattern))
+    if  bond_indices:
+        counter = 100
+        labels = []
+        bs = []
+        for bi in bond_indices:
+            b = input_mol.GetBondBetweenAtoms(bi[0],bi[1])
+            labels.append((counter,counter))
+            bs.append(b.GetIdx())
+            counter += 1
+        input_mol = Chem.FragmentOnBonds(input_mol,bs,dummyLabels=labels)
+    return [x.replace("*","Xe") for x in Chem.MolToSmiles(input_mol,isomericSmiles=True).split(".")]
+
+
 def get_num_ring_atoms(input_mol):
     """
     Get the number of ring atoms
@@ -35,7 +57,57 @@ function dt_molgraph to
             atom.SetIsAromatic(False)
         for bond in atom.GetBonds():
             bond.SetBondType(Chem.BondType.SINGLE)
-    return Chem.MolToSmiles(mol)
+    return Chem.MolToSmiles(mol,isomericSmiles=True)
+
+def recombine_edges(output_edges):
+    """
+    Recombine a list of edges based on their rules.
+    Recombines identical Xe isotopes. Remove isotopes.
+    :param output_edges:
+    :return:
+    """
+    mol = Chem.MolFromSmiles(".".join(output_edges))
+    # Dictionary of atom's to bond together and delete if they come in pairs
+    iso_dict = {}
+    for atom in mol.GetAtoms():
+        if atom.GetAtomicNum()==54:
+            # Get the isotope
+            iso = atom.GetIsotope()
+            if iso in iso_dict:
+                iso_dict[iso].append(get_info(atom))
+            else:
+                iso_dict[iso] = [get_info(atom)]
+    mw = Chem.RWMol(mol)
+    # Add bonds first
+    del_indices = []
+    for isotope in iso_dict:
+        if len(iso_dict[isotope])>1:
+            mw.AddBond(iso_dict[isotope][0][1],
+                       iso_dict[isotope][1][1],
+                       Chem.BondType.SINGLE)
+            del_indices.append(iso_dict[isotope][0][0])
+            del_indices.append(iso_dict[isotope][1][0])
+    # Now delete atoms
+    del_count = 0
+    for atom_index in sorted(del_indices):
+        mw.RemoveAtom(atom_index-del_count)
+        del_count+=1
+    Chem.SanitizeMol(mw)
+    return Chem.MolToSmiles(mw,isomericSmiles=True)
+
+
+def rebuild_smi(input_list, ring_ring):
+    """
+    Rebuild a SMILES
+    :param input_list:
+    :param ring_ring:
+    :return:
+    """
+    if ring_ring:
+        rebuilt_smi = ".".join(input_list)
+    else:
+        rebuilt_smi = recombine_edges(input_list)
+    return rebuilt_smi
 
 def make_child_mol(rebuilt_smi):
     """
@@ -43,7 +115,8 @@ def make_child_mol(rebuilt_smi):
     :param rebuilt_smi:
     :return:
     """
-    return Chem.CanonSmiles(rebuilt_smi.replace("[Xe]","[H]"))
+    return Chem.CanonSmiles(Chem.MolToSmiles(Chem.MolFromSmiles(rebuilt_smi)).replace("[Xe]","[H]"))
+
 
 def get_info(atom):
     """

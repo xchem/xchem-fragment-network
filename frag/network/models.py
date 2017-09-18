@@ -44,7 +44,9 @@ class Node(object):
     def __eq__(self, other):
         return self.SMILES==other.SMILES
 
-    def __init__(self,input_mol):
+    def __init__(self,input_mol=None):
+        if not input_mol:
+            return
         if type(input_mol) == str:
             input_mol = Chem.MolFromSmiles(input_mol)
         self.SMILES = Chem.MolToSmiles(input_mol, isomericSmiles=True)
@@ -66,16 +68,16 @@ class Edge(object):
     def __eq__(self, other):
         return str(self) == str(other)
 
-    def __init__(self, excluded_smi,rebuilt_smi, node_one, node_two):
-        self.EXCLUDE_SMILES = excluded_smi
+    def __init__(self, excluded_smi, rebuilt_smi, node_one, node_two):
+        self.EXCLUDE_SMILES = Chem.MolToSmiles(Chem.MolFromSmiles(excluded_smi),isomericSmiles=False)
         self.EXCLUDE_TYPE = get_type(excluded_smi)
-        self.REBUILT_SMILES = rebuilt_smi
+        self.REBUILT_SMILES = Chem.MolToSmiles(Chem.MolFromSmiles(rebuilt_smi),isomericSmiles=False)
         self.REBUILT_RING_SMILES = simplified_graph(rebuilt_smi)
         self.REBUILT_TYPE = get_type(rebuilt_smi)
         self.EXCLUDED_RING_SMILES = simplified_graph(excluded_smi)
         self.NODES = [node_one, node_two]
 
     def __str__(self):
-        return " ".join(["EDGE", self.NODES[0].SMILES, self.NODES[1].SMILES, \
-        self.EXCLUDE_TYPE, self.EXCLUDE_SMILES, self.EXCLUDED_RING_SMILES, \
-        self.REBUILT_TYPE, self.REBUILT_SMILES, self.REBUILT_RING_SMILES])
+        return "".join(["EDGE"," ", self.NODES[0].SMILES," ", self.NODES[1].SMILES," ", \
+        self.EXCLUDE_TYPE,"|", self.EXCLUDE_SMILES,"|", self.EXCLUDED_RING_SMILES,"|", \
+        self.REBUILT_TYPE,"|", self.REBUILT_SMILES,"|", self.REBUILT_RING_SMILES])
