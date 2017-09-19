@@ -1,19 +1,12 @@
-from rdkit.Chem import Draw
-from rdkit import Chem
 import json
+from frag.network.utils import write_results
 
-def write_results(out_d):
+def write_all_out(out_d):
     for key in out_d:
-        mols = []
-        for mol in out_d[key]:
-            for new_mols in out_d[key][mol]:
-                mols.append(Chem.MolFromSmiles(new_mols[2]))
-        # Write out the image
-        img = Draw.MolsToGridImage(mols,useSVG=True)
-        # img.save(key + ".png")
+        img = write_results(out_d[key])
         out_file = open(key+".svg","w")
         out_file.write(img)
 
 if __name__ == "__main__":
-    write_results(json.load(open("data.json")))
+    write_all_out(json.load(open("data.json")))
 

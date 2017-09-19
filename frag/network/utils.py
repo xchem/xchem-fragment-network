@@ -1,6 +1,19 @@
 from rdkit import Chem
 from neo4j.v1 import GraphDatabase
+from rdkit.Chem import MCS,AllChem,Draw
 
+def write_results(input_dict):
+    mols = []
+    for mol in input_dict:
+        for new_mols in input_dict[mol]:
+            m = Chem.MolFromSmiles(new_mols[2])
+            mols.append(m)
+    if len(mols)>2:
+        p = Chem.MolFromSmarts(MCS.FindMCS(mols).smarts)
+        AllChem.Compute2DCoords(p)
+        for m in mols: AllChem.GenerateDepictionMatching2DStructure(m, p)
+    # Write out the image
+    return Draw.MolsToGridImage(mols,useSVG=True)
 
 def get_fragments(input_mol):
     """

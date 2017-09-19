@@ -1,6 +1,6 @@
 import json
 import argparse
-from frag.network.utils import get_driver
+from frag.network.utils import get_driver,write_results
 from rdkit import Chem
 
 def find_neighbours(tx, input_str):
@@ -30,7 +30,6 @@ if __name__ == "__main__":
     # Read in a SD or SMILES file - then write out into a specified directory
     parser = argparse.ArgumentParser(description='Query a Database for a given SMILES')
     parser.add_argument('--smiles')
-    parser.add_argument('--output')
     args = parser.parse_args()
     driver = get_driver()
     with driver.session() as session:
@@ -46,4 +45,7 @@ if __name__ == "__main__":
                 out_d[type][r_group_form] = [(trans_from, trans_to,end_mol)]
             else:
                 out_d[type][r_group_form].append((trans_from, trans_to,end_mol))
-        json.dump(out_d,open(args.output,"w"))
+        for key in out_d:
+            img = write_results(out_d[key])
+            out_f = open(key+".svg","w")
+            out_f.write(img)
