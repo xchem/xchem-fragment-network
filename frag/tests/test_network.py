@@ -1,8 +1,11 @@
 import unittest
+
 from rdkit import Chem
+
 from frag.network.models import NodeHolder,Node
-from frag.network.astex import create_children
+from frag.network.scripts.build_db import create_children
 from frag.network.utils import rebuild_smi,make_child_mol,get_fragments
+
 
 def parse_node(input_str):
     """

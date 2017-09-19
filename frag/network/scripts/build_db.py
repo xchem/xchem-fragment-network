@@ -1,6 +1,6 @@
 from rdkit import Chem
-from models import NodeHolder,Edge,Attr
-from utils import make_child_mol, rebuild_smi,get_fragments
+from frag.network.models import NodeHolder,Edge,Attr
+from frag.network.utils import make_child_mol, rebuild_smi,get_fragments
 import argparse,os
 
 
@@ -105,15 +105,14 @@ def build_network(attrs):
 if __name__ == "__main__":
 
     # Read in a SD or SMILES file - then write out into a specified directory
-
     parser = argparse.ArgumentParser(description='Convert a SMILES or SDFile to input for Astex Fragment network.')
     parser.add_argument('--input')
-    parser.add_argument('--output')
+    parser.add_argument('--base_dir')
     args = parser.parse_args()
-    attrs = [Attr(Chem.MolToSmiles(x,isomericSmiles=True),["1", "2"]) for x in Chem.SDMolSupplier(args.input)]
-    if not os.path.isdir(args.output):
-        os.mkdir(args.output)
+    attrs = [Attr(Chem.MolToSmiles(Chem.MolFromSmiles(x.split()[1])),x.split()[2:]) for x in open(args.input).readlines()]
+    if not os.path.isdir(args.base_dir):
+        os.mkdir(args.base_dir)
     # Build the network
     node_holder = build_network(attrs)
     # Write the data out
-    write_data(args.output,node_holder,attrs)
+    write_data(args.base_dir,node_holder,attrs)

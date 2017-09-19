@@ -1,4 +1,5 @@
 from rdkit import Chem
+from neo4j.v1 import GraphDatabase
 
 
 def get_fragments(input_mol):
@@ -117,7 +118,6 @@ def make_child_mol(rebuilt_smi):
     """
     return Chem.CanonSmiles(Chem.MolToSmiles(Chem.MolFromSmiles(rebuilt_smi)).replace("[Xe]","[H]"))
 
-
 def get_info(atom):
     """
     Get the needed info for an atom
@@ -137,3 +137,9 @@ def get_type(smiles):
     if mol.HasSubstructMatch(Chem.MolFromSmarts("[*;R]")):
         return "RING"
     return "FG"
+
+
+def get_driver():
+    # No auth on the database
+    driver = GraphDatabase.driver("bolt://localhost:7687")
+    return driver
