@@ -1,5 +1,7 @@
 import json
-from frag.network.utils import write_results
+
+from frag.utils.network_utils import write_results
+
 
 def write_all_out(out_d):
     for key in out_d:

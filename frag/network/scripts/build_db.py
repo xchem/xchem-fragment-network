@@ -1,7 +1,10 @@
+import argparse
+import os
+
 from rdkit import Chem
+
 from frag.network.models import NodeHolder,Edge,Attr
-from frag.network.utils import make_child_mol, rebuild_smi,get_fragments
-import argparse,os
+from frag.utils.network_utils import make_child_mol, rebuild_smi,get_fragments
 
 
 def get_ring_ring_splits(input_mol):

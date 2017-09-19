@@ -1,5 +1,5 @@
 import unittest
-from frag.utils import rdkit_parser
+from frag.utils import parser
 
 
 
@@ -21,18 +21,18 @@ HETATM 2024  O   HOH B 199      62.006 -56.842  90.642  1.00 50.69           O""
     single_water = """HETATM 2008  O   HOH B 184      53.034 -39.489  96.872  1.00 67.70           O"""
 
     def test_water_parser(self):
-        out_data = rdkit_parser._get_waters(self.water_data.split("\n"))
+        out_data = parser._get_waters(self.water_data.split("\n"))
         self.assertEqual(len(out_data),14)
-        out_data = rdkit_parser._get_waters(self.single_water.split("\n"))
+        out_data = parser._get_waters(self.single_water.split("\n"))
         self.assertEqual(len(out_data),1)
 
     def test_water_reader(self):
-        out_data = rdkit_parser._get_waters(self.water_data.split("\n"))
-        water_coords = rdkit_parser._get_water_coords(out_data)
+        out_data = parser._get_waters(self.water_data.split("\n"))
+        water_coords = parser._get_water_coords(out_data)
         self.assertEqual(len(water_coords),14)
         self.assertAlmostEquals(water_coords[4][2],77.866)
-        out_data = rdkit_parser._get_waters(self.single_water.split("\n"))
-        water_coords = rdkit_parser._get_water_coords(out_data)
+        out_data = parser._get_waters(self.single_water.split("\n"))
+        water_coords = parser._get_water_coords(out_data)
         self.assertEqual(len(water_coords), 1)
         self.assertAlmostEquals(water_coords[0][1],-39.489)
 

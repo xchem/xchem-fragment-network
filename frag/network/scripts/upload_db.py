@@ -1,6 +1,8 @@
-import os
-from frag.network.utils import get_driver
 import argparse
+import os
+
+from frag.utils.network_utils import get_driver
+
 
 def add_node(tx, smiles,hac,chac,osmiles):
     tx.run("MERGE (:F2 { smiles: $smiles, hac: toInt($hac), chac: toInt($chac), osmiles: $osmiles})",

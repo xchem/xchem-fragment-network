@@ -1,7 +1,9 @@
-import json
 import argparse
-from frag.network.utils import get_driver,write_results
+
 from rdkit import Chem
+
+from frag.utils.network_utils import get_driver,write_results
+
 
 def find_neighbours(tx, input_str):
     return tx.run("MATCH (sta:F2 {smiles:$smiles})-[n4:F2EDGE]-(n3:F2)-[n2:F2EDGE]-(end:EM) where" \

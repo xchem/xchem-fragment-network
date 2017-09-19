@@ -1,9 +1,8 @@
-# Generate ph4s for a molecule
-from rdkit.Chem import ChemicalFeatures
 import os
 
+from rdkit.Chem import ChemicalFeatures
 
-
+# Generate ph4s for a molecule
 class RDKitPh4(object):
 
     factory = None
