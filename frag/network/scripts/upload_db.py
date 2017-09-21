@@ -2,7 +2,7 @@ import argparse
 import os
 
 from frag.utils.network_utils import get_driver
-
+from tqdm import tqdm
 
 def add_node(tx, smiles,hac,chac,osmiles):
     tx.run("MERGE (:F2 { smiles: $smiles, hac: toInt($hac), chac: toInt($chac), osmiles: $osmiles})",
@@ -24,9 +24,10 @@ if __name__ == "__main__":
     driver = get_driver()
 
     with driver.session() as session:
-        for line in open(os.path.join(args.base_dir,"nodes.txt")).readlines():
+
+        for line in tqdm(open(os.path.join(args.base_dir,"nodes.txt")).readlines()):
             session.write_transaction(add_node,line.split()[1],line.split()[2],line.split()[3],line.split()[4])
-        for line in open(os.path.join(args.base_dir,"edges.txt")).readlines():
+        for line in tqdm(open(os.path.join(args.base_dir,"edges.txt")).readlines()):
             session.write_transaction(add_edge,line.split()[1],line.split()[2],line.split()[3])
-        for line in open(os.path.join(args.base_dir,"attributes.txt")).readlines():
+        for line in tqdm(open(os.path.join(args.base_dir,"attributes.txt")).readlines()):
             session.write_transaction(add_attr,line.split()[1],line.split()[3])

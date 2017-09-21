@@ -1,5 +1,6 @@
 import argparse
 import os
+from tqdm import tqdm
 
 from rdkit import Chem
 
@@ -98,7 +99,7 @@ def write_data(output_dir, node_holder, attrs):
 def build_network(attrs):
     node_holder = NodeHolder()
     # Create the nodes and test with output
-    for attr in attrs:
+    for attr in tqdm(attrs):
         node, is_node = node_holder.create_or_retrieve_node(attr.SMILES)
         if is_node:
             create_children(node, node_holder)
@@ -112,7 +113,13 @@ if __name__ == "__main__":
     parser.add_argument('--input')
     parser.add_argument('--base_dir')
     args = parser.parse_args()
-    attrs = [Attr(Chem.MolToSmiles(Chem.MolFromSmiles(x.split()[1])),x.split()[2:]) for x in open(args.input).readlines()]
+    #attrs = [Attr(Chem.MolToSmiles(Chem.MolFromSmiles(x.split()[1])),x.split()[2:]) for x in Chem.SDMolSupplier(args.input)]
+    attrs = []
+    id = 0
+    for i,x in enumerate(Chem.SDMolSupplier(args.input)):
+        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x)),["EM","EN"+str(i)])
+        attrs.append(attr)
+        id +=1
     if not os.path.isdir(args.base_dir):
         os.mkdir(args.base_dir)
     # Build the network
