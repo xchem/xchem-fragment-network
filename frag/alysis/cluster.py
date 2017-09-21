@@ -3,7 +3,7 @@ import sys
 import random
 import math
 
-class kmeans(object):
+class KMeans(object):
 
     def __init__(self, _X, _k, _xVal = 0, _stop=False):
         # X is sample size lists of dim length
@@ -133,10 +133,10 @@ class kmeans(object):
             yield x
 
 
-class dpmeans(kmeans):
+class DPMeans(KMeans):
     def __init__(self, _X, _lam = 1, _xVal = 0, _stop=False):
         # init k-means with 1 cluster
-        kmeans.__init__(self, _X, 1, _xVal, _stop)
+        KMeans.__init__(self, _X, 1, _xVal, _stop)
         self.lam = _lam
 
     def assign(self):
@@ -153,5 +153,10 @@ class dpmeans(kmeans):
             self.dataClusterId[i], dmin = self.nearestCluster(self.X[i])
 
     def error(self):
-        err, xValErr = kmeans.error(self)
+        err, xValErr = KMeans.error(self)
         return err + self.lam * self.k, xValErr + self.lam * self.k
+
+def dp_means(data, lamb):
+    dp = DPMeans(data, lamb, 0, False)
+    dp.run()
+    return dp

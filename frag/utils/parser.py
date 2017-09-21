@@ -1,5 +1,6 @@
 # Series of functions to parse input files
 from rdkit import Chem
+from frag.alysis.models import Cluster_Things,Object,Owner
 
 
 def _get_waters(lines):
@@ -26,7 +27,22 @@ def _get_water_coords(waters):
     return out_list
 
 
-def parse_ligands(input_file, input_type="sdf"):
+def _parse_ligand_sdf(input_file):
+    """
+    Function to parse a series of ligands - return RDKit mols.
+    :param input_file: the file to parse
+    :param input_type: the type of ligands
+    :return: the molecules parsed
+    """
+    mols = Chem.SDMolSupplier(input_file)
+    return mols
+
+def parse_ligands(input_file,input_type="sdf"):
+    mols = _parse_ligand_sdf(input_file=input_file)
+    # Now return them with their name and centre of mass
+
+
+def parse_ligand_ph4s(input_file, input_type="sdf"):
     """
     Function to parse a series of ligands - return RDKit mols.
     :param input_file: the file to parse
@@ -37,17 +53,26 @@ def parse_ligands(input_file, input_type="sdf"):
     return mols
 
 
-def parse_waters(input_pdb, input_mol=None, max_dist=10.0):
+
+def parse_waters(input_pdbs, input_mol=None, max_dist=10.0):
     """
     Function to parse a series of waters - return waters.
     :param input_pdb: the input PDB files
     :param input_mol: the input molecule (to use as a reference)
     :return: tuple threes of coordinates of the waters
     """
+    owner_list = []
     # First just get the waters from the file
-    waters = _get_waters(open(input_pdb).readlines())
-    water_coords = _get_water_coords(waters)
-    return  water_coords
+    for input_pdb in input_pdbs:
+        waters = _get_waters(open(input_pdb).readlines())
+        water_coords = _get_water_coords(waters)
+        out_l = []
+        for water in water_coords:
+            water = Object(water,"water")
+            out_l.append(water)
+        owner = Owner(out_l,input_pdb)
+        owner_list.append(owner)
+    return owner_list
 
 
 ### TODO Residues

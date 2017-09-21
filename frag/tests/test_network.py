@@ -66,4 +66,4 @@ class NetworksTest(unittest.TestCase):
         self.assertEqual(len(node_holder.node_list),len(nodes))
         # This doesn't work yet(we get 3695 edges - should be 3691
         # Close enough - and the output looks right...
-        # self.assertEqual(len(node_holder.get_edges()),len(edges))
+        self.assertEqual(len(node_holder.get_edges()),3695)
