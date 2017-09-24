@@ -1,10 +1,29 @@
 import uuid
+
+
+def split_res_water():
+    pass
+class StructHolder(object):
+    """
+    A class to holad
+    """
+    def __init__(self, struct_id, resid_pdb=None, ligand=None, water_pdb=None, apo_pdb=None):
+        self.struct_id = struct_id
+        self.water_pdb = water_pdb
+        self.resid_pdb = resid_pdb
+        self.ligand = ligand
+        if resid_pdb or water_pdb == None:
+            new_water_pdb, new_resid_pdb = split_res_water()
+            if resid_pdb == None:
+                self.resid_pdb == new_resid_pdb
+            if water_pdb == None:
+                self.water_pdb = new_water_pdb
+
 class Cluster_Things(object):
     """
     A class to cluster stuff.
     Probably also need a write output function too. Once I've got my head around that...
     """
-    # TODO Write output function
     def __init__(self, parser,lamb,cluster):
         self.parser = parser
         self.lamb = lamb
@@ -20,9 +39,9 @@ class Cluster_Things(object):
         for type in data_set:
             # Add clusters to objects
             self.out_clusters[type] = []
-            self.add_clust_to_obj(
-                self.cluster(data_set[type]["data"],type),
-                data_set[type]["objects"],type)
+            self.add_clust_to_obj(self.cluster(data_set[type]["data"],type),
+                                  data_set[type]["objects"],type)
+
 
     def add_clust_to_obj(self,cluster_obj,object_list,type):
         """
@@ -39,8 +58,11 @@ class Cluster_Things(object):
             this_clust.object_list.append(this_obj)
 
     def write_output(self):
+        """
+        Write the output of the clustering to JSON or similar
+        :return:
+        """
         for type in self.out_clusters:
-            print type
             self.out_clusters[type]
 
     def owner_list_conv(self):

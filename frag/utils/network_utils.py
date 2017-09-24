@@ -3,17 +3,25 @@ from neo4j.v1 import GraphDatabase
 from rdkit.Chem import MCS,AllChem,Draw
 
 def write_results(input_dict):
+    """
+    Write out a structure list of results.
+    :param input_dict:
+    :return:
+    """
     mols = []
+    out_imgs = {}
     for mol in input_dict:
+        out_imgs[mol] = []
         for new_mols in input_dict[mol]:
             m = Chem.MolFromSmiles(new_mols[2])
             mols.append(m)
-    if len(mols)>2:
-        p = Chem.MolFromSmarts(MCS.FindMCS(mols).smarts)
-        AllChem.Compute2DCoords(p)
-        for m in mols: AllChem.GenerateDepictionMatching2DStructure(m, p)
-    # Write out the image
-    return Draw.MolsToGridImage(mols,useSVG=True)
+        if len(mols)>2:
+            p = Chem.MolFromSmarts(MCS.FindMCS(mols).smarts)
+            AllChem.Compute2DCoords(p)
+            for m in mols: AllChem.GenerateDepictionMatching2DStructure(m, p)
+        out_imgs[mol] = Draw.MolsToGridImage(mols,useSVG=True)
+        # Write out the image
+    return out_imgs
 
 def get_fragments(input_mol):
     """
@@ -113,8 +121,8 @@ def recombine_edges(output_edges):
 def rebuild_smi(input_list, ring_ring):
     """
     Rebuild a SMILES
-    :param input_list:
-    :param ring_ring:
+    :param input_list: the list of fragments to be rebuilt
+    :param ring_ring: a boolean - indicating if this is a ring ring split
     :return:
     """
     if ring_ring:
@@ -153,6 +161,10 @@ def get_type(smiles):
 
 
 def get_driver():
+    """
+    Get the driver to the network connection
+    :return: the driver for the graphdabase
+    """
     # No auth on the database
     driver = GraphDatabase.driver("bolt://localhost:7687")
     return driver

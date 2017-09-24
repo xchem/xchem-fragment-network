@@ -113,7 +113,6 @@ if __name__ == "__main__":
     parser.add_argument('--input')
     parser.add_argument('--base_dir')
     args = parser.parse_args()
-    #attrs = [Attr(Chem.MolToSmiles(Chem.MolFromSmiles(x.split()[1])),x.split()[2:]) for x in Chem.SDMolSupplier(args.input)]
     attrs = []
     id = 0
     for i,x in enumerate(Chem.SDMolSupplier(args.input)):
