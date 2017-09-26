@@ -2,21 +2,19 @@ import argparse
 import os
 
 from frag.utils.network_utils import get_driver
+from tqdm import tqdm
 
-def add_nodes(tx, file_path):
-    tx.run("LOAD CSV FROM '$file_path' AS line FIELDTERMINATOR "
-           "' ' MERGE (:F2 { smiles: line[1], hac: toInt(line[2]), chac: toInt(line[3]), osmiles: line[4]});",
-           file_path=file_path)
+def add_node(tx, smiles,hac,chac,osmiles):
+    tx.run("MERGE (:F2 { smiles: $smiles, hac: toInt($hac), chac: toInt($chac), osmiles: $osmiles})",
+           smiles=smiles,hac=hac,chac=chac,osmiles=osmiles)
 
-def add_edges(tx,file_path):
-    tx.run("LOAD CSV FROM '$file_path' AS line FIELDTERMINATOR "
-           "' ' MATCH (n1:F2 { smiles: line[1]}), (n2:F2 { smiles: line[2]}) MERGE (n1)-[:F2EDGE{label:line[3]}]->(n2);",
-           file_path=file_path)
+def add_edge(tx,smiles,smiles_two,edge_meta):
+    tx.run("MATCH (n1:F2 { smiles: $smiles}), (n2:F2 { smiles: $smiles_two}) MERGE (n1)-[:F2EDGE{label:$edge_meta}]->(n2)",
+           smiles=smiles, smiles_two=smiles_two, edge_meta=edge_meta)
 
-def add_attrs(tx,file_path):
-    tx.run("LOAD CSV FROM '$file_path' AS line FIELDTERMINATOR ' ' "
-           "MATCH (n:F2 { smiles: line[1]} ) set n:MOL, n:EM, n.EM=toInt(line[3]);",
-           file_path=file_path)
+def add_attr(tx,smiles,attr):
+    tx.run("MATCH (n:F2 { smiles: $smiles} ) set n:MOL, n:EM, n.EM=$attr",
+           smiles=smiles,attr=attr)
 
 if __name__ == "__main__":
 
@@ -24,7 +22,12 @@ if __name__ == "__main__":
     parser.add_argument('--base_dir')
     args = parser.parse_args()
     driver = get_driver()
+
     with driver.session() as session:
-        session.write_transaction(add_nodes,os.path.join(args.base_dir,"nodes.txt"))
-        session.write_transaction(add_edges,os.path.join(args.base_dir,"edges.txt"))
-        session.write_transaction(add_attrs,os.path.join(args.base_dir,"attributes.txt"))
+
+        for line in tqdm(open(os.path.join(args.base_dir,"nodes.txt")).readlines()):
+            session.write_transaction(add_node,line.split()[1],line.split()[2],line.split()[3],line.split()[4])
+        for line in tqdm(open(os.path.join(args.base_dir,"edges.txt")).readlines()):
+            session.write_transaction(add_edge,line.split()[1],line.split()[2],line.split()[3])
+        for line in tqdm(open(os.path.join(args.base_dir,"attributes.txt")).readlines()):
+            session.write_transaction(add_attr,line.split()[1],line.split()[3])

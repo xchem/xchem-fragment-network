@@ -4,20 +4,46 @@ from rdkit import Chem
 
 from frag.utils.network_utils import get_driver,write_results
 
+class ReturnObject(object):
+
+    def __init__(self, start_smi, end_smi, label, edge_count):
+        """
+        Build this object.
+        :param start_smi:
+        :param end_smi:
+        :param label:
+        :param frag_type:
+        :param edge_count:
+        """
+        self.start_smi = start_smi
+        self.end_smi = end_smi
+        self.label = label
+        self.frag_type = None
+        self.edge_count = edge_count
+
+    def __str__(self):
+        out_list = [self.start_smi,self.end_smi,self.frag_type,self.edge_count,self.label]
+        return str(out_list)
+
+
+
+
+
 def find_double_edge(tx, input_str):
-    return tx.run("MATCH (sta:F2 {smiles:$smiles})-[nm:F2EDGE]-(n3:F2)-[ne:F2EDGE]-(end:EM) where" \
+    return tx.run("MATCH (sta:F2 {smiles:$smiles})-[nm:F2EDGE]-(mid:F2)-[ne:F2EDGE]-(end:EM) where" \
                                                              " abs(sta.hac-end.hac) <= 3 and abs(sta.chac-end.chac) <= 1" \
                                                              " and sta.smiles <> end.smiles " \
-                                                             "RETURN nm, ne, end" \
+                                                             "RETURN sta, nm, mid, ne, end " \
                                                              "order by split(nm.label, '|')[4], split(ne.label, '|')[2];",
                   smiles=input_str)
 
 def find_proximal(tx, input_str):
     return tx.run("match p = (n:F2{smiles:$smiles})-[nm]-(m:EM) "
                   "where abs(n.hac-m.hac) <= 3 and abs(n.chac-m.chac) <= 1 "
-                  "return nm, m "
+                  "return n, nm, m "
                   "order by split(nm.label, '|')[4];",
                   smiles=input_str)
+
 
 def get_type(r_group_form, sub_one, sub_two):
     if "." in r_group_form:
@@ -29,6 +55,52 @@ def get_type(r_group_form, sub_one, sub_two):
     return "replacement"
 
 
+def define_double_edge_type(record):
+    """
+    Define the type returned for proximal systems
+    :param record:
+    :return:
+    """
+    mol_one = record["sta"]
+    label = str(record["nm"]["label"].split("|")[4])
+    mid_label = str(record["ne"]["label"].split("|")[4])
+    mol_two = record["mid"]
+    mol_three = record["end"]
+    diff_one = mol_one["hac"] - mol_two["hac"]
+    diff_two = mol_two["hac"] - mol_three["hac"]
+
+    ret_obj = ReturnObject(mol_one["smiles"],mol_three["smiles"],label,2)
+    if "." in label:
+        ret_obj.frag_type = "LINKER"
+    elif diff_one >= 0 and diff_two >=0:
+        ret_obj.frag_type = "DELETION"
+    elif diff_one <=0 and diff_two <=0:
+        ret_obj.frag_type = "ADDITION"
+    else:
+        ret_obj.frag_type = "REPLACE"
+    return ret_obj
+
+
+def define_proximal_type(record):
+    """
+    Define the type returned for proximal systems
+    :param record:
+    :return:
+    """
+    mol_one = record["n"]
+    label = str(record["nm"]["label"].split("|")[4])
+    mol_two = record["m"]
+    ret_obj = ReturnObject(mol_one["smiles"],mol_two["smiles"],label,1)
+    if "." in label:
+        ret_obj.frag_type = "LINKER"
+    elif mol_one["hac"] - mol_two["hac"] > 0:
+        ret_obj.frag_type = "DELETION"
+    elif mol_one["hac"] - mol_two["hac"] < 0:
+        ret_obj.frag_type = "ADDITION"
+    else:
+        ret_obj.frag_type = "REPLACE"
+    return ret_obj
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Query a Database for a given SMILES')
@@ -37,40 +109,8 @@ if __name__ == "__main__":
     driver = get_driver()
     with driver.session() as session:
         records = []
-        out_d = {"replacement": {}, "ring_linker": {}, "linker": {}, "ring_replacement": {},"far":{}}
-        for record in session.read_transaction(find_double_edge, Chem.MolToSmiles(Chem.MolFromSmiles(args.smiles))):
-            trans_from = record[1]
-            trans_to = record[2]
-            r_group_form = record[0]
-            end_mol = record[5]
-            type = get_type(r_group_form,trans_from, trans_to)
-            if r_group_form not in out_d[type]:
-                out_d[type][r_group_form] = [(trans_from, trans_to,end_mol)]
-            else:
-                out_d[type][r_group_form].append((trans_from, trans_to,end_mol))
-        out_d["far"] = {}
-        for record in session.read_transaction(find_double_edge,Chem.MolToSmiles(Chem.MolFromSmiles(args.smiles))):
-            trans_from = record[1]
-            trans_to = record[2]
-            r_group_form = record[0]
-            end_mol = record[5]
-            if r_group_form not in out_d["far"]:
-                out_d["far"][r_group_form] = [(trans_from, trans_to,end_mol)]
-            else:
-                out_d["far"][r_group_form].append((trans_from, trans_to,end_mol))
-        for record in session.read_transaction(find_proximal,Chem.MolToSmiles(Chem.MolFromSmiles(args.smiles))):
-            print record
-            # trans_from = record[1]
-            # trans_to = record[2]
-            # r_group_form = record[0]
-            # end_mol = record[4]
-            # if r_group_form not in out_d["near"]:
-            #     out_d["near"][r_group_form] = [(trans_from, trans_to,end_mol)]
-            # else:
-            #     out_d["near"][r_group_form].append((trans_from, trans_to,end_mol))
-
-        for key in out_d:
-            img = write_results(out_d[key])
-            for mol in img:
-                out_f = open(mol+"__"+key+".svg","w")
-                out_f.write(img[mol])
+        smiles = args.smiles#Chem.MolToSmiles(Chem.MolFromSmiles(args.smiles))
+        for record in session.read_transaction(find_proximal,smiles):
+            print(define_proximal_type(record))
+        for record in session.read_transaction(find_double_edge, smiles):
+            print(define_double_edge_type(record))
