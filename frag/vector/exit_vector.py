@@ -67,8 +67,7 @@ def plane_best_fit_exit_vector(scaffold):
         print('This mol is not 3D - all PBFev angles will be 0 degrees')
         return [0]
     pts = np.array([list(conf.GetAtomPosition(i))  # Get atom coordinates if not Xenon
-                    for i in xrange(scaffold.GetNumAtoms())]
-                   if scaffold.GetAtomByIdx(i).element != "Xe")
+                    for i in xrange(scaffold.GetNumAtoms()) if scaffold.GetAtomByIdx(i).element != "Xe"])
     # Plane is xyz vector with a c intercept adjustment
     plane = get_best_fit_plane(pts)
 
