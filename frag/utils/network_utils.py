@@ -2,6 +2,9 @@ from rdkit import Chem
 from neo4j.v1 import GraphDatabase
 from rdkit.Chem import MCS,AllChem,Draw
 
+
+SMARTS_PATTERN = "[*;R]-;!@[*]"
+
 def write_results(input_dict):
     """
     Write out a structure list of results.
@@ -15,7 +18,7 @@ def write_results(input_dict):
         for new_mols in input_dict[mol]:
             m = Chem.MolFromSmiles(new_mols[2])
             mols.append(m)
-        if len(mols)>2:
+        if len(mols) > 2:
             p = Chem.MolFromSmarts(MCS.FindMCS(mols).smarts)
             AllChem.Compute2DCoords(p)
             for m in mols: AllChem.GenerateDepictionMatching2DStructure(m, p)
@@ -23,19 +26,19 @@ def write_results(input_dict):
         # Write out the image
     return out_imgs
 
+
 def get_fragments(input_mol):
     """
     Find the frgments for a given molecule
     :param input_mol:
     :return:
     """
-    smarts_pattern = "[*;R]-;!@[*]"
-    bond_indices = input_mol.GetSubstructMatches(Chem.MolFromSmarts(smarts_pattern))
-    if  bond_indices:
+    atom_indices = input_mol.GetSubstructMatches(Chem.MolFromSmarts(SMARTS_PATTERN))
+    if  atom_indices:
         counter = 100
         labels = []
         bs = []
-        for bi in bond_indices:
+        for bi in atom_indices:
             b = input_mol.GetBondBetweenAtoms(bi[0],bi[1])
             labels.append((counter,counter))
             bs.append(b.GetIdx())
@@ -80,6 +83,7 @@ function dt_molgraph to
         for bond in atom.GetBonds():
             bond.SetBondType(Chem.BondType.SINGLE)
     return Chem.MolToSmiles(mol,isomericSmiles=True)
+
 
 def recombine_edges(output_edges):
     """
@@ -131,6 +135,7 @@ def rebuild_smi(input_list, ring_ring):
         rebuilt_smi = recombine_edges(input_list)
     return rebuilt_smi
 
+
 def make_child_mol(rebuilt_smi):
     """
     Make the child molecule
@@ -138,6 +143,7 @@ def make_child_mol(rebuilt_smi):
     :return:
     """
     return Chem.CanonSmiles(Chem.MolToSmiles(Chem.MolFromSmiles(rebuilt_smi)).replace("[Xe]","[H]"))
+
 
 def get_info(atom):
     """

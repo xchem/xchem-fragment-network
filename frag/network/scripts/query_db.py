@@ -1,8 +1,7 @@
 import argparse
 
-from rdkit import Chem
-
 from frag.utils.network_utils import get_driver,write_results
+from frag.utils.vector_utils import get_exit_vector_for_xe_smi
 
 class ReturnObject(object):
 
@@ -109,8 +108,18 @@ if __name__ == "__main__":
     driver = get_driver()
     with driver.session() as session:
         records = []
+        # TODO Canonicalise inputs
         smiles = args.smiles#Chem.MolToSmiles(Chem.MolFromSmiles(args.smiles))
         for record in session.read_transaction(find_proximal,smiles):
-            print(define_proximal_type(record))
+            ans = define_proximal_type(record)
+            records.append(ans)
         for record in session.read_transaction(find_double_edge, smiles):
-            print(define_double_edge_type(record))
+            ans = define_double_edge_type(record)
+            records.append(ans)
+        for label in list(set([x.label for x in records])):
+            # Linkers are meaningless
+            if "." in label:
+                continue
+            print(label)
+            print(get_exit_vector_for_xe_smi(label))
+

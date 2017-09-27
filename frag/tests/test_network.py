@@ -5,7 +5,7 @@ from rdkit import Chem
 from frag.network.models import NodeHolder,Node
 from frag.network.scripts.build_db import create_children
 from frag.utils.network_utils import rebuild_smi,make_child_mol,get_fragments
-
+from frag.network.decorate import decorate_smi
 
 def parse_node(input_str):
     """
@@ -67,3 +67,14 @@ class NetworksTest(unittest.TestCase):
         # This doesn't work yet(we get 3695 edges - should be 3691
         # Close enough - and the output looks right...
         self.assertEqual(len(node_holder.get_edges()),3695)
+
+    def test_decorate(self):
+        """
+        Test we can decorate a series of input SMILEs
+        :return:
+        """
+        input_data = ["Oc1ccc(cc1)c2ccccc2","c1ccccc1","c1ccncc1","c1cccnc1"]
+        output_data = [['Oc1ccc(-c2ccccc2[At])cc1', 'Oc1ccc(-c2ccccc2)c([At])c1', 'Oc1ccc(-c2ccc([At])cc2)cc1', 'Oc1ccc(-c2ccccc2)cc1[At]', 'Oc1ccc(-c2cccc([At])c2)cc1'],
+                       ['[At]c1ccccc1'],['[At]c1cccnc1', '[At]c1ccccn1', '[At]c1ccncc1'],['[At]c1cccnc1', '[At]c1ccccn1', '[At]c1ccncc1']]
+        for i,smi in enumerate(input_data):
+            self.assertListEqual(decorate_smi(smi),output_data[i])
