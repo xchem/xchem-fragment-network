@@ -1,7 +1,7 @@
 from rdkit import Chem
 from rdkit.Chem import AllChem,RWMol,Atom
 from frag.utils.network_utils import SMARTS_PATTERN
-
+from rdkit.Chem.Scaffolds import MurckoScaffold
 
 
 def get_mol(input_smi):

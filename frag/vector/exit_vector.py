@@ -1,14 +1,12 @@
-from rdkit.Chem import AllChem
-from rdkit import Chem
-from frag.utils.vector_utils import get_exit_vector_for_xe_smi
-from frag.utils.network_utils import get_fragments
 
+from frag.network.decorate import decorate_smi
+from frag.utils.vector_utils import get_max_ev_smi
 
 if __name__ == "__main__":
-    input_mol = Chem.MolFromSmiles("Oc1ccc(cc1)c2ccccc2")
-    input_mol = AllChem.AddHs(input_mol)
-    print(Chem.MolToSmiles(input_mol))
-    for frag in get_fragments(input_mol):
-        # TODO If it's not a ring ignore
-        print frag
-        print(get_exit_vector_for_xe_smi(frag))
+    for item in [x.strip().split(",") for x in open("/Users/abradley/fragalysis/frag/tests/data/enamine.csv").readlines()]:
+        print item
+        smiles = decorate_smi(item[1])
+        code = item[0]
+        for smi in smiles:
+            print smi
+            print(get_max_ev_smi(smi))

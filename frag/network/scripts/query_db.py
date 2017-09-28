@@ -25,9 +25,6 @@ class ReturnObject(object):
         return str(out_list)
 
 
-
-
-
 def find_double_edge(tx, input_str):
     return tx.run("MATCH (sta:F2 {smiles:$smiles})-[nm:F2EDGE]-(mid:F2)-[ne:F2EDGE]-(end:EM) where" \
                                                              " abs(sta.hac-end.hac) <= 3 and abs(sta.chac-end.chac) <= 1" \

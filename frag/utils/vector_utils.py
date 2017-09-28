@@ -32,21 +32,9 @@ def get_best_fit_plane(pts, weights=None):
     plane[3] = -1 * normal.dot(origin)
     return plane
 
-
-def plane_best_fit_calc(mol, confId=-1):
-    """
-
-    :param mol:
-    :param confId:
-    :return:
-    """
-    conf = mol.GetConformer(confId)
-    if not conf.Is3D():
-        return 0
-    pts = np.array([list(conf.GetAtomPosition(x)) for x in range(mol.GetNumAtoms())])
-    plane = get_best_fit_plane(pts)
+def get_pbf(plane,pts):
     denom = np.dot(plane[:3], plane[:3])
-    denom = denom**0.5
+    denom = denom ** 0.5
     # add up the distance from the plane for each point:
     res = 0.0
     for pt in pts:
@@ -64,7 +52,6 @@ def plane_best_fit_exit_vector(scaffold, repl_smarts, confId):
     :param confId:
     :return:
     """
-    # TODO - do for the normal to the best-fit plane too.
     # Get PBF plane for murcko scaffold only
     conf = scaffold.GetConformer(confId)
     if not conf.Is3D():
@@ -74,6 +61,7 @@ def plane_best_fit_exit_vector(scaffold, repl_smarts, confId):
                     for i in xrange(scaffold.GetNumAtoms()) if scaffold.GetAtomWithIdx(i).GetSymbol() != repl_smarts])
     # Plane is xyz vector with a c intercept adjustment
     plane = get_best_fit_plane(pts)
+    pbf = get_pbf(plane, pts)
     # Where [#0] matches exit vector SMILES [*]
     patt = Chem.MolFromSmarts('['+repl_smarts+']-[*]')
     matches = scaffold.GetSubstructMatches(patt)
@@ -95,17 +83,36 @@ def plane_best_fit_exit_vector(scaffold, repl_smarts, confId):
                           ((denom)*((np.dot(v, v))**0.5)))
         angle = np.abs(np.degrees(angle))
         exitVectors[out_isotope] = angle
+    exitVectors["pbf"] = pbf
     return exitVectors
 
 
-def get_exit_vector_for_xe_smi(input_smi):
+def get_exit_vector_for_xe_smi(input_smi,repl_smarts="At"):
     """
     Get the exit vector angles for a SMILES with Xen
     :param input_smi:
     :return:
     """
-    repl_smarts= "At"
     mol = Chem.MolFromSmiles(input_smi.replace("Xe",repl_smarts))
     conf_id = AllChem.EmbedMolecule(mol)
     AllChem.UFFOptimizeMolecule(mol, confId=conf_id)
     return plane_best_fit_exit_vector(mol,repl_smarts,conf_id)
+
+
+def get_max_ev_smi(smi):
+    """
+    Try three different size groups - and take the maximum.
+    This is a fairly huge assumption. The variability in the vector coud also be a parameter
+    :param smi:
+    :return:
+    """
+    # Big group
+    big = get_exit_vector_for_xe_smi(smi.replace("At", "Xe"), "At")
+    # Mediume group
+    medium = get_exit_vector_for_xe_smi(smi.replace("At", "Xe"), "K")
+    # Little group
+    small = get_exit_vector_for_xe_smi(smi.replace("At", "Xe"), "Li")
+    out_d = {}
+    for key in big:
+        out_d[key] = max([big[key], medium[key], small[key]])
+    return out_d

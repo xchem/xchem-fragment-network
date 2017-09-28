@@ -10,7 +10,7 @@ class VectorTest(unittest.TestCase):
         for i,smi in enumerate(input_data):
             ans = get_exit_vector_for_xe_smi(smi)
             test_dict = output_data[i]
-            for key in ans:
+            for key in test_dict:
                 self.assertAlmostEqual(ans[key],test_dict[key],2)
 
 
