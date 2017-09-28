@@ -30,11 +30,11 @@ HETATM 2024  O   HOH B 199      62.006 -56.842  90.642  1.00 50.69           O""
         out_data = parser._get_waters(self.water_data.split("\n"))
         water_coords = parser._get_water_coords(out_data)
         self.assertEqual(len(water_coords),14)
-        self.assertAlmostEquals(water_coords[4][2],77.866)
+        self.assertAlmostEqual(water_coords[4][2],77.866)
         out_data = parser._get_waters(self.single_water.split("\n"))
         water_coords = parser._get_water_coords(out_data)
         self.assertEqual(len(water_coords), 1)
-        self.assertAlmostEquals(water_coords[0][1],-39.489)
+        self.assertAlmostEqual(water_coords[0][1],-39.489)
 
 
 

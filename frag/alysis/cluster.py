@@ -27,7 +27,7 @@ class KMeans(object):
         idx = 0
         # initialize to k random data points
         # don't assign x-val as a strat center
-        for i in random.sample(range(0, self.size), self.k):
+        for i in random.sample(list(range(0, self.size)), self.k):
             self.clusters[idx] = self.X[i]
             idx += 1
         # output records
@@ -54,8 +54,8 @@ class KMeans(object):
         return res/self.size, err1
 
     def nearestCluster(self, x):
-        cmin = sys.maxint
-        cidx = -sys.maxint
+        cmin = sys.maxsize
+        cidx = -sys.maxsize
         for j in self.clusters:
             dist = math.sqrt(self.dSquared(x, self.clusters[j]))
             if dist < cmin:  # record closest centroid
@@ -89,7 +89,7 @@ class KMeans(object):
 
     def run(self, nmax = 100, eps = 1e-7):
         prev = 0.0
-        prevXVal = float(sys.maxint)
+        prevXVal = float(sys.maxsize)
         for iter in range(0,nmax):
             # update assignments
             self.assign()

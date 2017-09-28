@@ -9,4 +9,4 @@ if __name__ == "__main__":
         code = item[0]
         for smi in smiles:
             print(smi)
-            print(get_max_ev_smi(smi))
+            print((get_max_ev_smi(smi)))

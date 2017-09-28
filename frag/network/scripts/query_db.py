@@ -118,5 +118,5 @@ if __name__ == "__main__":
             if "." in label:
                 continue
             print(label)
-            print(get_exit_vector_for_xe_smi(label))
+            print((get_exit_vector_for_xe_smi(label)))
 
