@@ -1,5 +1,4 @@
 from frag.network.decorate import decorate_smi
-from frag.utils.network_utils import get_fragments
 import argparse
 from rdkit import Chem
 from rdkit.Chem.Scaffolds import MurckoScaffold

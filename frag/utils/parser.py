@@ -1,7 +1,6 @@
 # Series of functions to parse input files
 from rdkit import Chem
 from frag.alysis.models import Cluster_Things,Object,Owner
-from Bio.PDB import PDBIO
 
 def _get_waters(lines):
     """Helper function to extract waters from a PDB file"""
