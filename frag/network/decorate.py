@@ -29,3 +29,58 @@ def decorate_smi(input_smi):
         new_mols.append(Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(newer_mol,isomericSmiles=True)),isomericSmiles=True))
     return list(set(new_mols))
 
+
+def deletion_linker_smi(input_smi):
+    mol=Chem.MolFromSmiles(input_smi)
+    nr = mol.GetRingInfo().NumRings()
+#     hac = mol.Get
+    fragments = get_fragments(mol)
+    out_mols = []
+    linker_mols = []
+    ring_ring_splits = get_ring_ring_splits(mol)
+    if ring_ring_splits:
+        for ring_ring_split in ring_ring_splits:
+            rebuilt_smi = rebuild_smi(ring_ring_split,ring_ring=True)
+            rebuilt_smi = rebuilt_smi.replace("Xe","Li")
+            if Chem.MolFromSmiles(rebuilt_smi).GetRingInfo().NumRings() < nr:
+                continue
+            new_mol = link_li(rebuilt_smi)
+            linker_mols.append(new_mol)
+    for i in range(len(fragments)):
+        new_list = []
+        for j,item in enumerate(fragments):
+            if i==j:
+                excluded_smi = item
+                continue
+            new_list.append(item)
+        rebuilt_smi = rebuild_smi(new_list,ring_ring=False)
+        if "." in rebuilt_smi:
+            rebuilt_smi = rebuilt_smi.replace("Xe","Li")
+            if Chem.MolFromSmiles(rebuilt_smi).GetRingInfo().NumRings() < nr:
+                continue
+            new_mol = link_li(rebuilt_smi)
+            linker_mols.append(new_mol)
+            continue
+        new_mol = Chem.MolFromSmiles(rebuilt_smi)
+        if new_mol.GetRingInfo().NumRings() < nr:
+            continue
+        out_mols.append(new_mol)
+    return (out_mols,linker_mols)
+
+def link_li(rebuilt_smi):
+    mol =Chem.MolFromSmiles(rebuilt_smi)
+    mol = RWMol(mol)
+    bons =  [x[0] for x in mol.GetSubstructMatches(Chem.MolFromSmarts("[Li]"))]
+    mol.AddBond(bons[0],bons[1])
+    return mol.GetMol()
+
+def addition_smi(input_smi):
+    smis = decorate_smi(input_smi)
+    return [Chem.MolFromSmiles(x) for x in smis]
+
+def get_add_del_link(smi):
+    additions = addition_smi(smi)
+    res = deletion_linker_smi(smi)
+    linkers = res[1]
+    deletions = res[0]
+    return [additions,deletions,linkers]
