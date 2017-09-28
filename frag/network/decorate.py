@@ -41,8 +41,9 @@ def deletion_linker_smi(input_smi):
         for ring_ring_split in ring_ring_splits:
             rebuilt_smi = rebuild_smi(ring_ring_split,ring_ring=True)
             rebuilt_smi = rebuilt_smi.replace("Xe","Li")
-            if Chem.MolFromSmiles(rebuilt_smi).GetRingInfo().NumRings() < nr:
-                continue
+            new_mol = Chem.MolFromSmiles(rebuilt_smi).GetRingInfo()
+            if new_mol.NumRings() < nr:
+                 continue
             new_mol = link_li(rebuilt_smi)
             linker_mols.append(new_mol)
     for i in range(len(fragments)):
@@ -55,7 +56,8 @@ def deletion_linker_smi(input_smi):
         rebuilt_smi = rebuild_smi(new_list,ring_ring=False)
         if "." in rebuilt_smi:
             rebuilt_smi = rebuilt_smi.replace("Xe","Li")
-            if Chem.MolFromSmiles(rebuilt_smi).GetRingInfo().NumRings() < nr:
+            new_mol = Chem.MolFromSmiles(rebuilt_smi).GetRingInfo()
+            if new_mol.NumRings() < nr:
                 continue
             new_mol = link_li(rebuilt_smi)
             linker_mols.append(new_mol)
