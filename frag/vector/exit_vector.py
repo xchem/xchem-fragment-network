@@ -8,5 +8,5 @@ if __name__ == "__main__":
         smiles = decorate_smi(item[1])
         code = item[0]
         for smi in smiles:
-            print smi
+            print(smi)
             print(get_max_ev_smi(smi))

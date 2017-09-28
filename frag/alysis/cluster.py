@@ -80,7 +80,7 @@ class KMeans(object):
                 ctemp[self.dataClusterId[i]][j] += self.X[i][j]
             ctemp[self.dataClusterId[i]][self.nFeatures] += 1 # count
         for c in self.clusters:
-            if ctemp[c][self.nFeatures] <> 0:
+            if ctemp[c][self.nFeatures] != 0:
                 self.clusters[c] = [ ctemp[c][k]/ctemp[c][self.nFeatures] for k in range(0,self.nFeatures)]
             else:
                 # no members in this cluster
