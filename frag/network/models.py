@@ -1,6 +1,6 @@
 from rdkit import Chem
 
-from frag.utils.network_utils import get_num_ring_atoms, get_type, simplified_graph
+from frag.utils.network_utils import get_num_ring_atoms, get_type, simplified_graph,add_child_and_edge
 
 
 class NodeHolder(object):
@@ -38,6 +38,7 @@ class NodeHolder(object):
         :return:
         """
         return set(self.edge_list)
+
 
 class Node(object):
     """

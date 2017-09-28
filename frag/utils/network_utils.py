@@ -1,7 +1,7 @@
 from rdkit import Chem
-from neo4j.v1 import GraphDatabase
 from rdkit.Chem import MCS,AllChem,Draw
 from tqdm import tqdm
+import os
 
 SMARTS_PATTERN = "[*;R]-;!@[*]"
 
@@ -181,6 +181,7 @@ def get_driver():
     :return: the driver for the graphdabase
     """
     # No auth on the database
+    from neo4j.v1 import GraphDatabase
     driver = GraphDatabase.driver("bolt://localhost:7687")
     return driver
 
@@ -228,7 +229,7 @@ def add_child_and_edge(new_list, input_node, excluded_smi, node_holder, ring_rin
     child_smi = make_child_mol(rebuilt_smi)
     # Now generate the edges with input and this node
     new_node,is_new = node_holder.create_or_retrieve_node(child_smi)
-    node_holder.edge_list.append(Edge(excluded_smi, rebuilt_smi, input_node, new_node))
+    node_holder.create_or_retrieve_edge(excluded_smi, rebuilt_smi, input_node, new_node)
     # Now generate the children for this too
     if is_new:
         create_children(new_node, node_holder)
