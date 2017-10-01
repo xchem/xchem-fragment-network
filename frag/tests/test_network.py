@@ -53,9 +53,14 @@ class NetworksTest(unittest.TestCase):
         Test we can generate nodes for the basic data.
         :return:
         """
-        nodes = [x for x in open("data/nodes.txt").readlines()]
-        edges = [x.split() for x in open("data/edges.txt").readlines()]
-        attrs = [Attr(input_str=x) for x in open("data/attributes.txt").readlines()]
+        try:
+            nodes = [x for x in open("frag/tests/data/nodes.txt").readlines()]
+            edges = [x.split() for x in open("frag/tests/data/edges.txt").readlines()]
+            attrs = [Attr(input_str=x) for x in open("frag/tests/data/attributes.txt").readlines()]
+        except IOError:
+            nodes = [x for x in open("data/nodes.txt").readlines()]
+            edges = [x.split() for x in open("data/edges.txt").readlines()]
+            attrs = [Attr(input_str=x) for x in open("data/attributes.txt").readlines()]
         node_holder = NodeHolder()
         node_holder = build_network(attrs, node_holder)
         # Create the nodes and test with output
