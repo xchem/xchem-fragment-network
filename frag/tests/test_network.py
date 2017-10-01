@@ -2,9 +2,8 @@ import unittest
 
 from rdkit import Chem
 
-from frag.network.models import NodeHolder,Node
-from frag.network.scripts.build_db import create_children
-from frag.utils.network_utils import rebuild_smi,make_child_mol,get_fragments
+from frag.network.models import NodeHolder,Node,Attr
+from frag.utils.network_utils import rebuild_smi,make_child_mol,get_fragments,build_network
 from frag.network.decorate import decorate_smi
 
 def parse_node(input_str):
@@ -56,13 +55,10 @@ class NetworksTest(unittest.TestCase):
         """
         nodes = [x for x in open("data/nodes.txt").readlines()]
         edges = [x.split() for x in open("data/edges.txt").readlines()]
-        smiles = [x.split()[1] for x in open("data/attributes.txt").readlines()]
+        attrs = [Attr(input_str=x) for x in open("data/attributes.txt").readlines()]
         node_holder = NodeHolder()
+        node_holder = build_network(attrs, node_holder)
         # Create the nodes and test with output
-        for smile in smiles:
-            node, is_node = node_holder.create_or_retrieve_node(smile)
-            if is_node:
-                create_children(node, node_holder)
         self.assertEqual(len(node_holder.node_list),len(nodes))
         # This doesn't work yet(we get 3695 edges - should be 3691
         # Close enough - and the output looks right...

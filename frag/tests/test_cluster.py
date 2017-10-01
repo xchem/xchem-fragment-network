@@ -1,6 +1,5 @@
 import unittest
-from frag.cluster import dpmeans,kmeans
-
+from frag.alysis.cluster import DPMeans,KMeans
 
 
 class ParserTest(unittest.TestCase):
@@ -10,7 +9,7 @@ class ParserTest(unittest.TestCase):
         Basic test to show clustering works.
         :return:
         """
-        dp = dpmeans([(1.0,1.0,1.0),(3.0,3.0,3.0)], 1.0, 0, False)
+        dp = DPMeans([(1.0,1.0,1.0),(3.0,3.0,3.0)], 1.0, 0, False)
         dp.run()
         self.assertEqual(len(dp.clusters),2)
 
@@ -19,6 +18,6 @@ class ParserTest(unittest.TestCase):
         Simple test to show clustering works.
         :return:
         """
-        kmean = kmeans([(1.0,1.0,1.0),(3.0,3.0,3.0)], 2, 0, False)
+        kmean = KMeans([(1.0,1.0,1.0),(3.0,3.0,3.0)], 2, 0, False)
         kmean.run()
         self.assertEqual(len(kmean.clusters),2)
