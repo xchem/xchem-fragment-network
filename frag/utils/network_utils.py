@@ -157,7 +157,11 @@ def make_child_mol(rebuilt_smi):
     mol = Chem.MolFromSmiles(rebuilt_smi)
     if mol is None:
         return None
-    return Chem.CanonSmiles(Chem.MolToSmiles(mol).replace("[Xe]","[H]"))
+    new_smi = Chem.MolToSmiles(mol).replace("[Xe]", "[H]")
+    mol = Chem.MolFromSmiles(new_smi)
+    if mol is None:
+        return None
+    return Chem.CanonSmiles(new_smi)
 
 
 def get_info(atom):
