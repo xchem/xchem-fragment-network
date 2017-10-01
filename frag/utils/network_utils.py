@@ -29,6 +29,14 @@ def write_results(input_dict):
         # Write out the image
     return out_imgs
 
+def get_frag_list(str_find,input_mol):
+    """
+    Get the list of fragments
+    :param str_find:
+    :param input_mol:
+    :return:
+    """
+    [x.replace(str_find, "Xe") for x in Chem.MolToSmiles(input_mol, isomericSmiles=True).split(".")]
 
 def get_fragments(input_mol,iso_labels=True):
     """
@@ -55,8 +63,8 @@ def get_fragments(input_mol,iso_labels=True):
             bs.append(b.GetIdx())
             labels.append((1,1))
         input_mol = Chem.FragmentOnBonds(input_mol, bs,dummyLabels=labels)
-        return [x.replace("1*", "Xe") for x in Chem.MolToSmiles(input_mol, isomericSmiles=True).split(".")]
-    return [x.replace("*","Xe") for x in Chem.MolToSmiles(input_mol,isomericSmiles=True).split(".")]
+        return get_frag_list(str_find="1*")
+    return get_frag_list(str_find="*")
 
 
 def get_num_ring_atoms(input_mol):
