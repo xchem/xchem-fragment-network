@@ -1,6 +1,6 @@
-import argparse
+import argparse,random
 
-from frag.utils.network_utils import get_driver,write_results
+from frag.utils.network_utils import get_driver,write_results,canon_input
 from frag.utils.vector_utils import get_exit_vector_for_xe_smi
 
 class ReturnObject(object):
@@ -21,8 +21,8 @@ class ReturnObject(object):
         self.edge_count = edge_count
 
     def __str__(self):
-        out_list = [self.start_smi,self.end_smi,self.frag_type,self.edge_count,self.label]
-        return str(out_list)
+        out_list = [self.label,str(self.edge_count),self.frag_type]
+        return "_".join(out_list)
 
 
 def find_double_edge(tx, input_str):
@@ -83,10 +83,13 @@ def define_proximal_type(record):
     :param record:
     :return:
     """
+    print(str(record["nm"]["label"].split("|")))
     mol_one = record["n"]
     label = str(record["nm"]["label"].split("|")[4])
     mol_two = record["m"]
     ret_obj = ReturnObject(mol_one["smiles"],mol_two["smiles"],label,1)
+    print(mol_one["smiles"])
+    print(mol_two["smiles"])
     if "." in label:
         ret_obj.frag_type = "LINKER"
     elif mol_one["hac"] - mol_two["hac"] > 0:
@@ -97,16 +100,39 @@ def define_proximal_type(record):
         ret_obj.frag_type = "REPLACE"
     return ret_obj
 
+def organise(records,num_picks):
+    out_d = {}
+    smi_set = set()
+    for rec in records:
+        rec_key = str(rec)
+        if rec_key in out_d:
+            out_d[rec_key].append(rec.end_smi)
+        else:
+            out_d[rec_key] = [rec.end_smi]
+        smi_set.add(rec.end_smi)
+    print(str(len(out_d)) + " hypotheses")
+    print(str(len(smi_set)) + " total compounds")
+    max_per_hypothesis = num_picks / len(out_d)
+    out_smi = []
+    for rec in out_d:
+        random.shuffle(out_d[rec])
+        out_d[rec] = out_d[rec][:max_per_hypothesis]
+        out_smi.extend(out_d[rec])
+    print(out_d)
+    return out_d
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Query a Database for a given SMILES')
     parser.add_argument('--smiles')
+    parser.add_argument('--num_picks')
     args = parser.parse_args()
+    num_picks = int(args.num_picks)
     driver = get_driver()
     with driver.session() as session:
         records = []
         # TODO Canonicalise inputs
-        smiles = args.smiles#Chem.MolToSmiles(Chem.MolFromSmiles(args.smiles))
+        smiles = canon_input(args.smiles)
         for record in session.read_transaction(find_proximal,smiles):
             ans = define_proximal_type(record)
             records.append(ans)
@@ -119,4 +145,10 @@ if __name__ == "__main__":
                 continue
             print(label)
             print((get_exit_vector_for_xe_smi(label)))
+        # TODO Fucntion to organise the results into groups - based on linker and Type
+        orga_dict = organise(records,num_picks)
+        img_dict = write_results(orga_dict)
+        for key in img_dict:
+            out_f = open(key+".svg","w")
+            out_f.write(img_dict[key])
 

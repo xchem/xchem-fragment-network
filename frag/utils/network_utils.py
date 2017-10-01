@@ -15,12 +15,11 @@ def write_results(input_dict):
     :param input_dict:
     :return:
     """
-    mols = []
     out_imgs = {}
     for mol in input_dict:
-        out_imgs[mol] = []
+        mols = []
         for new_mols in input_dict[mol]:
-            m = Chem.MolFromSmiles(new_mols[2])
+            m = Chem.MolFromSmiles(new_mols)
             mols.append(m)
         if len(mols) > 2:
             p = Chem.MolFromSmarts(MCS.FindMCS(mols).smarts)
@@ -238,6 +237,9 @@ def add_child_and_edge(new_list, input_node, excluded_smi, node_holder, ring_rin
     if is_new:
         create_children(new_node, node_holder)
 
+
+def canon_input(smi):
+    return Chem.MolToSmiles(Chem.MolFromSmiles(smi),isomericSmiles=True)
 
 def create_children(input_node, node_holder):
     """

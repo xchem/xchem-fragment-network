@@ -5,7 +5,7 @@ from rdkit import Chem
 
 from frag.network.models import NodeHolder,Edge,Attr
 from frag.utils.network_utils import build_network, write_data
-
+from tqdm import tqdm
 if __name__ == "__main__":
 
     # Read in a SD or SMILES file - then write out into a specified directory
@@ -15,8 +15,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     attrs = []
     id = 0
-    for i,x in enumerate(Chem.SDMolSupplier(args.input)):
-        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x)),["EM","EN"+str(i)])
+    for x in tqdm(Chem.SDMolSupplier(args.input)):
+        if x is None:
+            continue
+        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x,isomericSmiles=True)),["EM",x.GetProp("idnumber")])
         attrs.append(attr)
         id +=1
     if not os.path.isdir(args.base_dir):

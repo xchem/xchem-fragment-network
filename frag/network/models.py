@@ -29,7 +29,7 @@ class NodeHolder(object):
         :return:
         """
         new_edge = Edge(excluded_smi, child_smi, input_node, new_node)
-        new_edge.NODES = []
+        new_edge.NODES = [input_node,new_node]
         self.edge_list.append(new_edge)
         return new_edge
 

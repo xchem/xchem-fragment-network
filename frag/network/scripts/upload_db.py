@@ -24,7 +24,6 @@ if __name__ == "__main__":
     driver = get_driver()
 
     with driver.session() as session:
-
         for line in tqdm(open(os.path.join(args.base_dir,"nodes.txt")).readlines()):
             session.write_transaction(add_node,line.split()[1],line.split()[2],line.split()[3],line.split()[4])
         for line in tqdm(open(os.path.join(args.base_dir,"edges.txt")).readlines()):
