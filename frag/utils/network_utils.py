@@ -63,8 +63,8 @@ def get_fragments(input_mol,iso_labels=True):
             bs.append(b.GetIdx())
             labels.append((1,1))
         input_mol = Chem.FragmentOnBonds(input_mol, bs,dummyLabels=labels)
-        return get_frag_list(str_find="1*")
-    return get_frag_list(str_find="*")
+        return get_frag_list(str_find="1*",input_mol=input_mol)
+    return get_frag_list(str_find="*",input_mol=input_mol)
 
 
 def get_num_ring_atoms(input_mol):
