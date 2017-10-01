@@ -91,9 +91,15 @@ class Attr(object):
     A Class of attributes
     """
 
-    def __init__(self, smiles, property_list):
-        self.SMILES = smiles
-        self.PROP_LIST = property_list
+    def __init__(self, smiles=None, property_list=None, input_str=None):
+        if input_str:
+            self.SMILES = input_str.split()[1]
+            self.PROP_LIST = input_str.split()[2:]
+        else:
+            self.SMILES = smiles
+            self.PROP_LIST = property_list
+        if self.SMILES is None:
+            raise ValueError("Attribute has None SMILES")
 
     def __str__(self):
         tot_list=  ["ATTR",self.SMILES]

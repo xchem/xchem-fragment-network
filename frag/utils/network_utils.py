@@ -36,7 +36,7 @@ def get_frag_list(str_find,input_mol):
     :param input_mol:
     :return:
     """
-    [x.replace(str_find, "Xe") for x in Chem.MolToSmiles(input_mol, isomericSmiles=True).split(".")]
+    return [x.replace(str_find, "Xe") for x in Chem.MolToSmiles(input_mol, isomericSmiles=True).split(".")]
 
 def get_fragments(input_mol,iso_labels=True):
     """
