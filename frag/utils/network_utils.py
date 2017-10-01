@@ -155,10 +155,12 @@ def make_child_mol(rebuilt_smi):
     :return:
     """
     mol = Chem.MolFromSmiles(rebuilt_smi)
+    #TODO proper warning messages for thsee two exceptions
     if mol is None:
         return None
     new_smi = Chem.MolToSmiles(mol).replace("[Xe]", "[H]")
     mol = Chem.MolFromSmiles(new_smi)
+    #TODO proper warning messages for thsee two exceptions
     if mol is None:
         return None
     return Chem.CanonSmiles(new_smi)
