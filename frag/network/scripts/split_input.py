@@ -16,7 +16,7 @@ if __name__ == "__main__":
     num_splits = int(args.num_splits)
     out_files = []
     for i in range(num_splits):
-        out_files.appned(Chem.SDWriter(args.input.replace(".sdf","_"+str(i+1)+".sdf")))
+        out_files.append(Chem.SDWriter(args.input.replace(".sdf","_"+str(i+1)+".sdf")))
     attrs = []
     counter =0
     for x in tqdm(Chem.SDMolSupplier(args.input)):
