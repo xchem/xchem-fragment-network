@@ -154,7 +154,10 @@ def make_child_mol(rebuilt_smi):
     :param rebuilt_smi:
     :return:
     """
-    return Chem.CanonSmiles(Chem.MolToSmiles(Chem.MolFromSmiles(rebuilt_smi)).replace("[Xe]","[H]"))
+    mol = Chem.MolFromSmiles(rebuilt_smi)
+    if mol is None:
+        return None
+    return Chem.CanonSmiles(Chem.MolToSmiles(mol).replace("[Xe]","[H]"))
 
 
 def get_info(atom):
@@ -185,7 +188,7 @@ def get_driver():
     """
     # No auth on the database
     from neo4j.v1 import GraphDatabase
-    driver = GraphDatabase.driver("bolt://localhost:7687")
+    driver = GraphDatabase.driver("bolt://52.91.71.182:7687")
     return driver
 
 def get_ring_ring_splits(input_mol):
@@ -230,6 +233,8 @@ def add_child_and_edge(new_list, input_node, excluded_smi, node_holder, ring_rin
     rebuilt_smi = rebuild_smi(new_list,ring_ring)
     # Turn into child molecule
     child_smi = make_child_mol(rebuilt_smi)
+    if child_smi is None:
+        return
     # Now generate the edges with input and this node
     new_node,is_new = node_holder.create_or_retrieve_node(child_smi)
     node_holder.create_or_retrieve_edge(excluded_smi, rebuilt_smi, input_node, new_node)
