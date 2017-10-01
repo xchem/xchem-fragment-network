@@ -123,32 +123,33 @@ def organise(records,num_picks):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Query a Database for a given SMILES')
-    parser.add_argument('--smiles')
-    parser.add_argument('--num_picks')
-    args = parser.parse_args()
-    num_picks = int(args.num_picks)
-    driver = get_driver()
-    with driver.session() as session:
-        records = []
-        # TODO Canonicalise inputs
-        smiles = canon_input(args.smiles)
-        for record in session.read_transaction(find_proximal,smiles):
-            ans = define_proximal_type(record)
-            records.append(ans)
-        for record in session.read_transaction(find_double_edge, smiles):
-            ans = define_double_edge_type(record)
-            records.append(ans)
-        for label in list(set([x.label for x in records])):
-            # Linkers are meaningless
-            if "." in label:
-                continue
-            print(label)
-            print((get_exit_vector_for_xe_smi(label)))
-        # TODO Fucntion to organise the results into groups - based on linker and Type
-        orga_dict = organise(records,num_picks)
-        img_dict = write_results(orga_dict)
-        for key in img_dict:
-            out_f = open(key+".svg","w")
-            out_f.write(img_dict[key])
-
+        parser = argparse.ArgumentParser(description='Query a Database for a given SMILES')
+        parser.add_argument('--smiles')
+        parser.add_argument('--num_picks')
+        args = parser.parse_args()
+        num_picks = int(args.num_picks)
+        driver = get_driver()
+        with driver.session() as session:
+            records = []
+            smiles = canon_input(args.smiles)
+            for record in session.read_transaction(find_proximal,smiles):
+                ans = define_proximal_type(record)
+                records.append(ans)
+            for record in session.read_transaction(find_double_edge, smiles):
+                ans = define_double_edge_type(record)
+                records.append(ans)
+            for label in list(set([x.label for x in records])):
+                # Linkers are meaningless
+                if "." in label:
+                    continue
+                print(label)
+                print((get_exit_vector_for_xe_smi(label)))
+            # TODO Function to organise the results into groups - based on linker and Type
+            if records:
+                orga_dict = organise(records,num_picks)
+                img_dict = write_results(orga_dict)
+                for key in img_dict:
+                    out_f = open(key+".svg","w")
+                    out_f.write(img_dict[key])
+            else:
+                print("Nothing found for input: "+smiles)
