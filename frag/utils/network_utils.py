@@ -158,6 +158,7 @@ def make_child_mol(rebuilt_smi):
     #TODO proper warning messages for thsee two exceptions
     if mol is None:
         return None
+    # TODO - check that non isomeric is ok here
     new_smi = Chem.MolToSmiles(mol).replace("[Xe]", "[H]")
     mol = Chem.MolFromSmiles(new_smi)
     #TODO proper warning messages for thsee two exceptions
