@@ -1,20 +1,9 @@
 import argparse
 import os
 
-from frag.utils.network_utils import get_driver
+from frag.utils.network_utils import get_driver,add_attr,add_edge,add_node
 from tqdm import tqdm
 
-def add_node(tx, smiles,hac,chac,osmiles):
-    tx.run("MERGE (:F2 { smiles: $smiles, hac: toInt($hac), chac: toInt($chac), osmiles: $osmiles})",
-           smiles=smiles,hac=hac,chac=chac,osmiles=osmiles)
-
-def add_edge(tx,smiles,smiles_two,edge_meta):
-    tx.run("MATCH (n1:F2 { smiles: $smiles}), (n2:F2 { smiles: $smiles_two}) MERGE (n1)-[:F2EDGE{label:$edge_meta}]->(n2)",
-           smiles=smiles, smiles_two=smiles_two, edge_meta=edge_meta)
-
-def add_attr(tx,smiles,attr):
-    tx.run("MATCH (n:F2 { smiles: $smiles} ) set n:MOL, n:EM, n.EM=$attr",
-           smiles=smiles,attr=attr)
 
 if __name__ == "__main__":
 

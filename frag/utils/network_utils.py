@@ -306,3 +306,16 @@ def build_network(attrs,node_holder):
         if is_node:
             create_children(node, node_holder)
     return node_holder
+
+
+def add_node(tx, smiles,hac,chac,osmiles):
+    tx.run("MERGE (:F2 { smiles: $smiles, hac: toInt($hac), chac: toInt($chac), osmiles: $osmiles})",
+           smiles=smiles,hac=hac,chac=chac,osmiles=osmiles)
+
+def add_edge(tx,smiles,smiles_two,edge_meta):
+    tx.run("MATCH (n1:F2 { smiles: $smiles}), (n2:F2 { smiles: $smiles_two}) MERGE (n1)-[:F2EDGE{label:$edge_meta}]->(n2)",
+           smiles=smiles, smiles_two=smiles_two, edge_meta=edge_meta)
+
+def add_attr(tx,smiles,attr):
+    tx.run("MATCH (n:F2 { smiles: $smiles} ) set n:MOL, n:EM, n.EM=$attr",
+           smiles=smiles,attr=attr)

@@ -80,10 +80,11 @@ class Edge(object):
         self.EXCLUDED_RING_SMILES = simplified_graph(excluded_smi)
         self.NODES = [node_one, node_two]
 
+    def get_label(self):
+        return "".join([self.EXCLUDE_TYPE, "|", self.EXCLUDE_SMILES, "|", self.EXCLUDED_RING_SMILES, "|", \
+        self.REBUILT_TYPE, "|", self.REBUILT_SMILES, "|", self.REBUILT_RING_SMILES])
     def __str__(self):
-        return "".join(["EDGE"," ", self.NODES[0].SMILES," ", self.NODES[1].SMILES," ", \
-        self.EXCLUDE_TYPE,"|", self.EXCLUDE_SMILES,"|", self.EXCLUDED_RING_SMILES,"|", \
-        self.REBUILT_TYPE,"|", self.REBUILT_SMILES,"|", self.REBUILT_RING_SMILES])
+        return "".join(["EDGE"," ", self.NODES[0].SMILES," ", self.NODES[1].SMILES," ",self.get_label])
 
 
 class Attr(object):
@@ -99,7 +100,7 @@ class Attr(object):
             self.SMILES = smiles
             self.PROP_LIST = property_list
         if self.SMILES is None:
-            raise ValueError("Attribute has None SMILES")
+            raise ValueError("Att")
 
     def __str__(self):
         tot_list=  ["ATTR",self.SMILES]

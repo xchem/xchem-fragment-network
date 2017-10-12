@@ -1,6 +1,7 @@
 import argparse,random
 
-from frag.utils.network_utils import get_driver,write_results,canon_input
+from frag.network.models import NodeHolder
+from frag.utils.network_utils import get_driver,write_results,canon_input,add_node,add_edge,add_attr,create_children
 from frag.utils.vector_utils import get_exit_vector_for_xe_smi
 
 class ReturnObject(object):
@@ -58,8 +59,8 @@ def define_double_edge_type(record):
     :return:
     """
     mol_one = record["sta"]
-    label = str(record["nm"]["label"].split("|")[4])
-    mid_label = str(record["ne"]["label"].split("|")[4])
+    first_label = str(record["nm"]["label"].split("|")[4])
+    label = str(record["ne"]["label"].split("|")[4])
     mol_two = record["mid"]
     mol_three = record["end"]
     diff_one = mol_one["hac"] - mol_two["hac"]
@@ -110,8 +111,8 @@ def organise(records,num_picks):
         else:
             out_d[rec_key] = [rec.end_smi]
         smi_set.add(rec.end_smi)
-    print(str(len(out_d)) + " hypotheses")
-    print(str(len(smi_set)) + " total compounds")
+    # print(str(len(out_d)) + " hypotheses")
+    # print(str(len(smi_set)) + " total compounds")
     max_per_hypothesis = num_picks / len(out_d)
     out_smi = []
     for rec in out_d:
@@ -121,31 +122,30 @@ def organise(records,num_picks):
     print(out_d)
     return out_d
 
-def get_picks(smiles,num_picks):
-    driver = get_driver()
-    with driver.session() as session:
-        records = []
-        for record in session.read_transaction(find_proximal, smiles):
-            ans = define_proximal_type(record)
-            records.append(ans)
-        for record in session.read_transaction(find_double_edge, smiles):
-            ans = define_double_edge_type(record)
-            records.append(ans)
-        for label in list(set([x.label for x in records])):
-            # Linkers are meaningless
-            if "." in label:
-                continue
-            print(label)
-            print((get_exit_vector_for_xe_smi(label)))
-        # TODO Function to organise the results into groups - based on linker and Type
-        if records:
-            orga_dict = organise(records, num_picks)
-            img_dict = write_results(orga_dict)
-            for key in img_dict:
-                out_f = open(key + ".svg", "w")
-                out_f.write(img_dict[key])
-        else:
-            print("Nothing found for input: " + smiles)
+def get_picks(session,smiles,num_picks):
+    records = []
+    for record in session.read_transaction(find_proximal, smiles):
+        ans = define_proximal_type(record)
+        records.append(ans)
+    for record in session.read_transaction(find_double_edge, smiles):
+        ans = define_double_edge_type(record)
+        records.append(ans)
+    for label in list(set([x.label for x in records])):
+        # Linkers are meaningless
+        if "." in label:
+            continue
+        # print(label)
+        # print((get_exit_vector_for_xe_smi(label)))
+    # TODO Function to organise the results into groups - based on linker and Type
+    if records:
+        print(smiles)
+        orga_dict = organise(records, num_picks)
+        img_dict = write_results(orga_dict)
+        for key in img_dict:
+            out_f = open(key + ".svg", "w")
+            out_f.write(img_dict[key])
+    else:
+        print("Nothing found for input: " + smiles)
 
 if __name__ == "__main__":
 
@@ -155,4 +155,18 @@ if __name__ == "__main__":
         args = parser.parse_args()
         num_picks = int(args.num_picks)
         smiles = canon_input(args.smiles)
+        # Add this node
+        node_holder = NodeHolder()
+        driver = get_driver()
+        with driver.session() as session:
+            # node, is_node = node_holder.create_or_retrieve_node(smiles)
+            # if is_node:
+            #     create_children(node, node_holder)
+            # for node in node_holder.node_list:
+            #     add_node(session, node.SMILES,node.HAC,node.RAC,node.RING_SMILES)
+            # for edge in node_holder.edge_list:
+            #     add_edge(session,edge.NODES[0].SMILES,edge.NODES[1].SMILES,edge.get_label())
+            # Add this as a query node
+            # add_attr(session)
+            get_picks(session,smiles, num_picks)
 
