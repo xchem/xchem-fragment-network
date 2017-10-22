@@ -5,3 +5,8 @@ install:
   - docker build -t abradle/fragalysis .
 script:
   - docker run abradle/fragalysis /bin/sh -c "cd /usr/local/fragalysis && nosetests"
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push xchem/fragalysis;
+    fi

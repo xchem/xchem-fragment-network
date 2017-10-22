@@ -29,7 +29,7 @@ setup(
 
     # Author details
     author='Anthony Bradley',
-    author_email='anthony.bradley@rcsb.org',
+    author_email='anthony.bradley@diamond.ac.uk',
 
     # Choose your license
     license='Apache 2.0',
