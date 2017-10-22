@@ -3,6 +3,7 @@ import sys
 import random
 import math
 
+
 class KMeans(object):
 
     def __init__(self, _X, _k, _xVal = 0, _stop=False):
@@ -156,7 +157,14 @@ class DPMeans(KMeans):
         err, xValErr = KMeans.error(self)
         return err + self.lam * self.k, xValErr + self.lam * self.k
 
+
 def dp_means(data, lamb):
+    """
+    Carry out DP Means clustering on a vector of vectors
+    :param data: vector of vectors (all same length)
+    :param lamb: the parameter - the distance between clusters
+    :return:
+    """
     dp = DPMeans(data, lamb, 0, False)
     dp.run()
     return dp
