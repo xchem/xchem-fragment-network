@@ -12,7 +12,6 @@ class KMeans(object):
         # _xVal is the number of records to hold out cross-validation.
         # To use this you must randomize input data!
         #
-        #
         # Setting _stop=True causes iteration to stop when out of cross-validate
         # error starts to rise.
         #
