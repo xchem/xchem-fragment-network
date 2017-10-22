@@ -1,4 +1,5 @@
 ipython==5.4.1
+tqdm
+neo4j-driver
 numpy
 nose
-msgpack-python
