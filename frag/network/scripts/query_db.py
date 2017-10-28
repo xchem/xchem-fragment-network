@@ -1,6 +1,6 @@
 import argparse,random
 
-from frag.network.query import get_picks
+from frag.network.query import write_picks
 
 if __name__ == "__main__":
 
@@ -11,5 +11,5 @@ if __name__ == "__main__":
         num_picks = int(args.num_picks)
         smiles = args.smiles
         # Add this node
-        get_picks(smiles,num_picks)
+        write_picks(smiles,num_picks)
 

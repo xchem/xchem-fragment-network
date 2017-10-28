@@ -109,15 +109,12 @@ def organise(records,num_picks):
         else:
             out_d[rec_key] = [rec.end_smi]
         smi_set.add(rec.end_smi)
-    # print(str(len(out_d)) + " hypotheses")
-    # print(str(len(smi_set)) + " total compounds")
     max_per_hypothesis = num_picks / len(out_d)
     out_smi = []
     for rec in out_d:
         random.shuffle(out_d[rec])
         out_d[rec] = out_d[rec][:max_per_hypothesis]
         out_smi.extend(out_d[rec])
-    print(out_d)
     return out_d
 
 def get_picks(smiles,num_picks):
@@ -139,9 +136,12 @@ def get_picks(smiles,num_picks):
         if records:
             print(smiles)
             orga_dict = organise(records, num_picks)
-            img_dict = write_results(orga_dict)
-            for key in img_dict:
-                out_f = open(key + ".svg", "w")
-                out_f.write(img_dict[key])
+            return orga_dict
         else:
             print("Nothing found for input: " + smiles)
+
+def write_picks(smiles,num_picks):
+    img_dict = write_results(get_picks(smiles,num_picks))
+    for key in img_dict:
+        out_f = open(key + ".svg", "w")
+        out_f.write(img_dict[key])
