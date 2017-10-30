@@ -117,23 +117,23 @@ def organise(records,num_picks):
         out_smi.extend(out_d[rec])
     return out_d
 
-def get_single_edge(smiles):
+def get_single_edge(smiles,session=None):
     """
     Retrieve all of the single edge connections from an input
     :param smiles: the input SMILES
     :return: a list of ReturnObjects
     """
-    return query_node(find_proximal,define_proximal_type,smiles)
+    return query_node(find_proximal,define_proximal_type,smiles,session)
 
-def get_double_edge(smiles):
+def get_double_edge(smiles,session=None):
     """
     Retrieve all of the double edge connections from an input
     :param smiles: the input SMILES
     :return: a list of ReturnObjects
     """
-    return query_node(find_double_edge,define_double_edge_type,smiles)
+    return query_node(find_double_edge,define_double_edge_type,smiles,session)
 
-def query_node(query,define_type,smiles):
+def query_node(query,define_type,smiles,session=None):
     """
     A function to make a query against the database and then sort the results.
     :param query: the function defining the cypher to be carried out
@@ -141,7 +141,13 @@ def query_node(query,define_type,smiles):
     :param smiles: the SMILES to query
     :return: a list of objects to be dealt thi
     """
-    with get_driver().session() as session:
+    if session is None:
+        with get_driver().session() as session:
+            records = []
+            for record in session.read_transaction(query, smiles):
+                ans = define_type(record)
+                records.append(ans)
+    else:
         records = []
         for record in session.read_transaction(query, smiles):
             ans = define_type(record)
@@ -158,8 +164,9 @@ def get_full_graph(smiles):
     smiles = canon_input(smiles)
     records = []
     # Get the single edges
-    records.extend(get_single_edge(smiles))
-    records.extend(get_double_edge(smiles))
+    with get_driver().session() as session:
+        records.extend(get_single_edge(smiles,session))
+        records.extend(get_double_edge(smiles,session))
     return records
 
 def get_picks(smiles,num_picks):
