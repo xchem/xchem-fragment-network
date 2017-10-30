@@ -9,9 +9,9 @@ def get_mol(input_smi):
 def decorate_smi(input_smi):
     """
     Decorate an input SMILES with a pseudeo molecule with all desirable changes.
-    This can be added to the list of input molecules - but we know if we get an Antimony back - it's not a real trans.
-    :param input_smi:
-    :return:
+    This can be added to the list of input molecules - and then we know if we get an Antimony back - it's not a real trans.
+    :param input_smi: the input smiles
+    :return: a list of SMILES around a given molecule.
     """
     # Add replacement groups (e.g. At) to all Ring positions in turn.
     mol = get_mol(input_smi)
@@ -30,9 +30,13 @@ def decorate_smi(input_smi):
 
 
 def deletion_linker_smi(input_smi):
-    mol=Chem.MolFromSmiles(input_smi)
+    """
+    Produce all the linker deletion SMILES and replace with Li
+    :param input_smi: the input SMI
+    :return:
+    """
+    mol = Chem.MolFromSmiles(input_smi)
     nr = mol.GetRingInfo().NumRings()
-#     hac = mol.Get
     fragments = get_fragments(mol)
     out_mols = []
     linker_mols = []
@@ -63,6 +67,7 @@ def deletion_linker_smi(input_smi):
             linker_mols.append(new_mol)
             continue
         new_mol = Chem.MolFromSmiles(rebuilt_smi)
+        # If the resulting
         if new_mol.GetRingInfo().NumRings() < nr:
             continue
         out_mols.append(new_mol)
@@ -79,9 +84,13 @@ def addition_smi(input_smi):
     smis = decorate_smi(input_smi)
     return [Chem.MolFromSmiles(x) for x in smis]
 
-def get_add_del_link(smi):
+def get_add_del_link(smi,asSmiles=True):
     additions = addition_smi(smi)
     res = deletion_linker_smi(smi)
     linkers = res[1]
     deletions = res[0]
+    if asSmiles:
+        additions = [Chem.MolToSmiles(x) for x in additions]
+        deletions = [Chem.MolToSmiles(x) for x in deletions]
+        linkers = [Chem.MolToSmiles(x) for x in linkers]
     return [additions,deletions,linkers]
