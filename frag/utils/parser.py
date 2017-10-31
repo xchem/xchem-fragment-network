@@ -119,3 +119,9 @@ def parse_residues(input_pdbs, input_mol=None, max_dist=10.0):
         owner = Owner(out_l,input_pdb)
         owner_list.append(owner)
     return owner_list
+
+def get_file(file_path,output_format,file_counter):
+    if output_format=="smi":
+        return Chem.SmilesWriter(file_path+"_"+str(file_counter)+".smi")
+    else:
+        return Chem.SDWriter(file_path+"_"+str(file_counter)+".sdf")
