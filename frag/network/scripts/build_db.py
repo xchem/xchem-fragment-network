@@ -19,7 +19,7 @@ if __name__ == "__main__":
     attrs = []
     id = 0
     mols = parse_mols(args.input,args.input_format)
-    for x in tqdm():
+    for x in tqdm(mols):
         if x is None:
             continue
         attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x,isomericSmiles=True)),["EM",x.GetProp("idnumber")])
