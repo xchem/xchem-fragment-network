@@ -3,7 +3,7 @@ import argparse
 
 from rdkit import Chem
 from tqdm import tqdm
-from frag.utils.parser import get_file
+from frag.utils.parser import get_file,parse_mols
 if __name__ == "__main__":
 
     # Read in a SD or SMILES file - then write out into a specified directory
@@ -23,11 +23,7 @@ if __name__ == "__main__":
         num_chunks = int(args.num_chunks)
         chunk_size = None
 
-    # Parse the mols
-    if args.input_format == "smi":
-        mols = Chem.SmilesMolSupplier(args.input)
-    else:
-        mols = Chem.SDMolSupplier(args.input)
+    mols = parse_mols(args.input, args.input_format)
 
     if num_chunks:
         out_files = [get_file(args.output,args.output_format,x) for x in range(num_chunks)]

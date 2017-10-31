@@ -125,3 +125,9 @@ def get_file(file_path,output_format,file_counter):
         return Chem.SmilesWriter(file_path+"_"+str(file_counter)+".smi")
     else:
         return Chem.SDWriter(file_path+"_"+str(file_counter)+".sdf")
+
+def parse_mols(input_file,input_format):
+    if input_format=="smi":
+        return Chem.SmilesMolSupplier(input_file)
+    else:
+        return Chem.SDMolSupplier(input_file)
