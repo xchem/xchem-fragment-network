@@ -83,7 +83,7 @@ class Edge(object):
         return "".join([self.EXCLUDE_TYPE, "|", self.EXCLUDE_SMILES, "|", self.EXCLUDED_RING_SMILES, "|", \
         self.REBUILT_TYPE, "|", self.REBUILT_SMILES, "|", self.REBUILT_RING_SMILES])
     def __str__(self):
-        return "".join(["EDGE"," ", self.NODES[0].SMILES," ", self.NODES[1].SMILES," ",self.get_label])
+        return "".join(["EDGE"," ", self.NODES[0].SMILES," ", self.NODES[1].SMILES," ",self.get_label()])
 
 
 class Attr(object):
