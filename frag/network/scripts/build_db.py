@@ -14,6 +14,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert a SMILES or SDFile to input for Astex Fragment network.')
     parser.add_argument('--input')
     parser.add_argument('--input_format',default="smi")
+
     parser.add_argument('--base_dir')
     args = parser.parse_args()
     attrs = []
@@ -22,7 +23,7 @@ if __name__ == "__main__":
     for x in tqdm(mols):
         if x is None:
             continue
-        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x,isomericSmiles=True)),["EM",x.GetProp("idnumber")])
+        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x,isomericSmiles=True)),["EM",x.GetProp("Name")])
         attrs.append(attr)
         id +=1
     if not os.path.isdir(args.base_dir):
