@@ -23,7 +23,7 @@ if __name__ == "__main__":
     for x in tqdm(mols):
         if x is None:
             continue
-        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x,isomericSmiles=True)),["EM",x.GetProp("Name")])
+        attr = Attr(Chem.CanonSmiles(Chem.MolToSmiles(x,isomericSmiles=True)),["EM",x.GetProp("_Name")])
         attrs.append(attr)
         id +=1
     if not os.path.isdir(args.base_dir):
