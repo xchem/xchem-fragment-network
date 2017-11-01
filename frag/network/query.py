@@ -132,11 +132,30 @@ def get_picks(smiles,num_picks):
             # Linkers are meaningless
             if "." in label:
                 continue
-        # TODO Function to organise the results into groups - based on linker and Type
         if records:
             print(smiles)
             orga_dict = organise(records, num_picks)
             return orga_dict
+        else:
+            print("Nothing found for input: " + smiles)
+
+def get_full_graph(smiles):
+    smiles = canon_input(smiles)
+    driver = get_driver()
+    with driver.session() as session:
+        records = []
+        for record in session.read_transaction(find_proximal, smiles):
+            ans = define_proximal_type(record)
+            records.append(ans)
+        for record in session.read_transaction(find_double_edge, smiles):
+            ans = define_double_edge_type(record)
+            records.append(ans)
+        for label in list(set([x.label for x in records])):
+            # Linkers are meaningless
+            if "." in label:
+                continue
+        if records:
+            return records
         else:
             print("Nothing found for input: " + smiles)
 
