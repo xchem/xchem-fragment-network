@@ -117,76 +117,28 @@ def organise(records,num_picks):
         out_smi.extend(out_d[rec])
     return out_d
 
-def get_single_edge(smiles,session=None):
-    """
-    Retrieve all of the single edge connections from an input
-    :param smiles: the input SMILES
-    :return: a list of ReturnObjects
-    """
-    return query_node(find_proximal,define_proximal_type,smiles,session)
-
-def get_double_edge(smiles,session=None):
-    """
-    Retrieve all of the double edge connections from an input
-    :param smiles: the input SMILES
-    :return: a list of ReturnObjects
-    """
-    return query_node(find_double_edge,define_double_edge_type,smiles,session)
-
-def query_node(query,define_type,smiles,session=None):
-    """
-    A function to make a query against the database and then sort the results.
-    :param query: the function defining the cypher to be carried out
-    :param define_type: the function that annotates results with their type
-    :param smiles: the SMILES to query
-    :return: a list of objects to be dealt thi
-    """
-    if session is None:
-        with get_driver().session() as session:
-            records = []
-            for record in session.read_transaction(query, smiles):
-                ans = define_type(record)
-                records.append(ans)
-    else:
-        records = []
-        for record in session.read_transaction(query, smiles):
-            ans = define_type(record)
-            records.append(ans)
-    return records
-
-
-def get_full_graph(smiles):
-    """
-    Get the full graph surrounding a given input
-    :param smiles:
-    :return:
-    """
-    smiles = canon_input(smiles)
-    records = []
-    # Get the single edges
-    with get_driver().session() as session:
-        records.extend(get_single_edge(smiles,session))
-        records.extend(get_double_edge(smiles,session))
-    return records
-
 def get_picks(smiles,num_picks):
-    """
-
-    :param smiles:
-    :param num_picks:
-    :return:
-    """
-    records = get_full_graph(smiles)
-    for label in list(set([x.label for x in records])):
-        # Linkers are meaningless
-        if "." in label:
-            continue
-    # TODO Function to organise the results into groups - based on linker and Type
-    if records:
-        orga_dict = organise(records, num_picks)
-        return orga_dict
-    else:
-        print("Nothing found for input: " + smiles)
+    smiles = canon_input(smiles)
+    driver = get_driver()
+    with driver.session() as session:
+        records = []
+        for record in session.read_transaction(find_proximal, smiles):
+            ans = define_proximal_type(record)
+            records.append(ans)
+        for record in session.read_transaction(find_double_edge, smiles):
+            ans = define_double_edge_type(record)
+            records.append(ans)
+        for label in list(set([x.label for x in records])):
+            # Linkers are meaningless
+            if "." in label:
+                continue
+        # TODO Function to organise the results into groups - based on linker and Type
+        if records:
+            print(smiles)
+            orga_dict = organise(records, num_picks)
+            return orga_dict
+        else:
+            print("Nothing found for input: " + smiles)
 
 def write_picks(smiles,num_picks):
     img_dict = write_results(get_picks(smiles,num_picks))

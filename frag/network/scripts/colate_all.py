@@ -39,7 +39,6 @@ def do_for_dir(input_dir,num):
     shutil.copy("nodes.csv","../nodes_"+str(num)+".csv")
     os.chdir("../")
 
-# TODO - remove surpluous edges
 node_list = ["nodes-header.csv"]
 edge_list = ["edges-header.csv"]
 for i in range(19):
