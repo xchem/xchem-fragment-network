@@ -109,11 +109,15 @@ def organise(records,num_picks):
         else:
             out_d[rec_key] = [rec.end_smi]
         smi_set.add(rec.end_smi)
-    max_per_hypothesis = num_picks / len(out_d)
+    if num_picks:
+        max_per_hypothesis = num_picks / len(out_d)
     out_smi = []
     for rec in out_d:
         random.shuffle(out_d[rec])
-        out_d[rec] = out_d[rec][:max_per_hypothesis]
+        if num_picks:
+            out_d[rec] = out_d[rec][:max_per_hypothesis]
+        else:
+            out_d[rec] = out_d[rec]
         out_smi.extend(out_d[rec])
     return out_d
 
@@ -133,7 +137,6 @@ def get_picks(smiles,num_picks):
             if "." in label:
                 continue
         if records:
-            print(smiles)
             orga_dict = organise(records, num_picks)
             return orga_dict
         else:
@@ -155,7 +158,8 @@ def get_full_graph(smiles):
             if "." in label:
                 continue
         if records:
-            return records
+            orga_dict = organise(records, None)
+            return orga_dict
         else:
             print("Nothing found for input: " + smiles)
 
