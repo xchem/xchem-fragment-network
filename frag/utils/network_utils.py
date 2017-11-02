@@ -203,7 +203,7 @@ def get_driver():
     """
     # No auth on the database
     from neo4j.v1 import GraphDatabase
-    driver = GraphDatabase.driver("bolt://52.91.71.182:7687")
+    driver = GraphDatabase.driver("bolt://neo4j:7687")
     return driver
 
 def get_ring_ring_splits(input_mol):
