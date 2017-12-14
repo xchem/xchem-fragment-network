@@ -76,8 +76,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['tqdm','neo4j-driver','numpy','nose'],
-
+    install_requires=['tqdm','neo4j-driver','numpy','nose','pprint','socketIO_client_nexus'],
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
