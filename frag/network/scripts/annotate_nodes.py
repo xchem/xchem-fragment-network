@@ -4,6 +4,7 @@ if __name__ == "__main__":
     # Read in a SD or SMILES file - then write out into a specified directory
     parser = argparse.ArgumentParser(description='Annotate a Nodes.txt file with data from multiple attributes files')
     parser.add_argument('--input_attrs')
+    parser.add_argument('--input_lib')
     parser.add_argument('--input_nodes')
     args = parser.parse_args()
     attrs = []
