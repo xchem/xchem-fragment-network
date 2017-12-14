@@ -1,4 +1,4 @@
-from nodeprovider import NodeProvider
+from .nodeprovider import NodeProvider
 
 from threading import Lock
 import threading

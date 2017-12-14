@@ -5,21 +5,17 @@
 # In the future a transpiled version of the SATurn class saturn.db.NodeProvider will be used instead but for that
 # to happen saturn.client.core.ClientCore needs to be made Python compatible.
 
-from SATurn import haxe_Serializer
-from SATurn import haxe_ds_StringMap
-from SATurn import _hx_AnonObject
+from .SATurn import haxe_Serializer
+from .SATurn import _hx_AnonObject
 
 import urllib.request
 import urllib.parse
 import json
-import ijson
 
 import logging
 import time
 
-import os
 import base64
-from astropy import log
 
 from socketIO_client_nexus import SocketIO, LoggingNamespace
 

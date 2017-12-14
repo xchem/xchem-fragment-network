@@ -3,3 +3,6 @@ tqdm
 neo4j-driver
 numpy
 nose
+pprint
+threading
+socketIO_client_nexus

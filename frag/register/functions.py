@@ -1,5 +1,5 @@
-from chemireg import ChemiReg
-import pprint,uuid
+from .chemireg import ChemiReg
+import pprint
 
 HOST_NAME = 'https://globalchemireg.sgc.ox.ac.uk'
 PORT = 443
@@ -9,10 +9,13 @@ class ChemiRegInterface():
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.client.close()
 
+    def __enter__(self):
+        self.client.connect()
+        return self
+
     def __init__(self,user_name, password, project_name="OxXChem"):
         self.client = ChemiReg(HOST_NAME, PORT, user_name, password)
         self.pp = pprint.PrettyPrinter(indent=4)
-        self.client.connect()
         self.project_name=project_name
 
     def _handle_query(self,query):
