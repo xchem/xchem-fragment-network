@@ -19,7 +19,7 @@ class ChemiRegInterface():
         self.project_name=project_name
 
     def _handle_query(self,query):
-        self.pp.pprint(query)
+        # self.pp.pprint(query)
         if query['error'] is not None:
             raise Exception(query['error'])
         return query['objects']
