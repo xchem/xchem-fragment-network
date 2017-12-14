@@ -290,7 +290,7 @@ class ChemiRegTests(object):
         self.client.close()
 
 if __name__ == '__main__':
-    tests = ChemiRegTests('https://globalchemireg.sgc.ox.ac.uk', 443, 'abradley', r'y5=Zx!gF\7@pZk@+')
+    tests = ChemiRegTests('https://globalchemireg.sgc.ox.ac.uk', 443, 'abradley', '')
     tests.run_tests()
 
     
