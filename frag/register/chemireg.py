@@ -212,18 +212,15 @@ class ChemiReg(object):
         return self.query('saturn.db.provider.hooks.ExternalJsonHook:Fetch', arguments)
 
 class ChemiRegTests(object):
-    def __init__(self, host, port, username, password):
+    def __init__(self, username, password, host='https://globalchemireg.sgc.ox.ac.uk', port=443):
         self.client = ChemiReg(host, port, username, password) # type : ChemiReg
         self.client.connect()
-
         self.pp = pprint.PrettyPrinter(indent=4)
 
     def run_tests(self):
         self.fetch_test1()
-
-        #self.insert_json_test1()
-
-        #self.update_test1()
+        self.insert_json_test1()
+        self.update_test1()
 
         self.after_tests()
 
@@ -289,8 +286,3 @@ class ChemiRegTests(object):
     def after_tests(self):
         self.client.close()
 
-if __name__ == '__main__':
-    tests = ChemiRegTests('https://globalchemireg.sgc.ox.ac.uk', 443, 'abradley', '')
-    tests.run_tests()
-
-    
