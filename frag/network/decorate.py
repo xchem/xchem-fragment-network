@@ -74,10 +74,10 @@ def deletion_linker_smi(input_smi):
     return (out_mols,linker_mols)
 
 def link_li(rebuilt_smi):
-    mol =Chem.MolFromSmiles(rebuilt_smi)
+    mol = Chem.MolFromSmiles(rebuilt_smi)
     mol = RWMol(mol)
-    bons =  [x[0] for x in mol.GetSubstructMatches(Chem.MolFromSmarts("[Li]"))]
-    mol.AddBond(bons[0],bons[1])
+    # bons =  [x[0] for x in mol.GetSubstructMatches(Chem.MolFromSmarts("[Li]"))]
+    # mol.AddBond(bons[0],bons[1])
     return mol.GetMol()
 
 def addition_smi(input_smi):
