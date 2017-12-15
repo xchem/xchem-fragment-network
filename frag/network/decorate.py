@@ -76,8 +76,8 @@ def deletion_linker_smi(input_smi):
 def link_li(rebuilt_smi):
     mol = Chem.MolFromSmiles(rebuilt_smi)
     mol = RWMol(mol)
-    # bons =  [x[0] for x in mol.GetSubstructMatches(Chem.MolFromSmarts("[Li]"))]
-    # mol.AddBond(bons[0],bons[1])
+    bons =  [x[0] for x in mol.GetSubstructMatches(Chem.MolFromSmarts("[Li]"))]
+    mol.AddBond(bons[0],bons[1])
     return mol.GetMol()
 
 def addition_smi(input_smi):
@@ -90,7 +90,7 @@ def get_add_del_link(smi,asSmiles=True):
     linkers = res[1]
     deletions = res[0]
     if asSmiles:
-        additions = [Chem.MolToSmiles(x) for x in additions]
+        additions = [Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(x).replace("[At]","[Xe]"))) for x in additions]
         deletions = [Chem.MolToSmiles(x) for x in deletions]
-        linkers = [Chem.MolToSmiles(x) for x in linkers]
+        linkers = [Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(x).replace("[Li]~[Li]","[Xe].[Xe]"))) for x in linkers]
     return [additions,deletions,linkers]
