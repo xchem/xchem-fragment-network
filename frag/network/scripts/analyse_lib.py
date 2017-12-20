@@ -3,7 +3,7 @@ from rdkit.Chem.rdMolDescriptors import GetMorganFingerprint
 from rdkit import Chem
 from frag.network.query import get_full_graph
 from frag.network.decorate import get_add_del_link
-import json
+import json,tqdm
 
 
 def get_sum_stats(smi_list, smiles):
@@ -806,8 +806,8 @@ if __name__ == "__main__":
  'CC(C)COC=1C=CC(=CC1)C(=O)N2CCCC2',
  'COC=1C=CC=CC1NC(=O)C2=CC=C(C)S2']
     res_dict = {}
-    for smi in smiles_list:
+    for smi in tqdm(smiles_list):
         smi = max(smi.split("."), key=len)
         res_dict[smi] = run_for_smiles(smi)
-        with open("tot_rest.json","w") as out_f:
-            out_f.write(json.dumps(res_dict))
+    with open("tot_rest.json","w") as out_f:
+        out_f.write(json.dumps(res_dict))

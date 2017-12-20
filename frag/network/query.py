@@ -82,13 +82,10 @@ def define_proximal_type(record):
     :param record:
     :return:
     """
-    print(str(record["nm"]["label"].split("|")))
     mol_one = record["n"]
     label = str(record["nm"]["label"].split("|")[4])
     mol_two = record["m"]
     ret_obj = ReturnObject(mol_one["smiles"],mol_two["smiles"],label,1)
-    print(mol_one["smiles"])
-    print(mol_two["smiles"])
     if "." in label:
         ret_obj.frag_type = "LINKER"
     elif mol_one["hac"] - mol_two["hac"] > 0:
