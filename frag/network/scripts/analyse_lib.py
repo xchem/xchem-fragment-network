@@ -5,6 +5,7 @@ from frag.network.query import get_full_graph
 from frag.network.decorate import get_add_del_link
 import json
 
+
 def get_sum_stats(smi_list, smiles):
     self_fp = GetMorganFingerprint(Chem.MolFromSmiles(smiles), 2)
     fps = [GetMorganFingerprint(Chem.MolFromSmiles(x),2) for x in smi_list]
@@ -804,8 +805,10 @@ if __name__ == "__main__":
  'O=C1NC=C(N2CCOCC2)C(=O)N1',
  'CC(C)COC=1C=CC(=CC1)C(=O)N2CCCC2',
  'COC=1C=CC=CC1NC(=O)C2=CC=C(C)S2']
-    res_dict = {}
     for smi in smiles_list:
-        res_dict[smi] = run_for_smiles(smi)
-    with open("tot_rest.json","w") as out_f:
-        out_f.write(json.dumps(res_dict))
+        res_dict = {}
+        smi = max(smi.split("."), key=len)
+        for smi in smiles_list:
+            res_dict[smi] = run_for_smiles(smi)
+        with open("tot_rest.json","w") as out_f:
+            out_f.write(json.dumps(res_dict))
