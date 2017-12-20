@@ -30,7 +30,7 @@ class ChemiRegInterface():
         :param data_to_update: the input data needing updating
         :return: the dictionary with ids as the key and the data as the value
         """
-        data_with_ids = [x for x in data_to_update if 'id' in x]
+        data_with_ids = [x for x in data_to_update if 'compound_id' in x]
         if len(data_with_ids) == 0:
             print("Warning - no entries to update")
             return False
@@ -39,7 +39,7 @@ class ChemiRegInterface():
             print("Warning - "+str(data_not_updated)+" datapoints cannot be update.")
         id_as_key = {}
         for x in data_with_ids:
-            id_as_key[x['id']] = x
+            id_as_key[x['compound_id']] = x
         return id_as_key,list(id_as_key.keys())
 
     def _update_data_on_ids(self,query,ids_as_key):
@@ -52,9 +52,8 @@ class ChemiRegInterface():
         changes = []
         for compound in query['objects']:
             data = ids_as_key[compound['compound_id']]
-            for key in data:
-                compound[key] = data[key]
-            changes.append(compound)
+            data['id'] = str(compound['id'])
+            changes.append(data)
         return changes
 
     def update_project_name(self,project_name):
@@ -77,11 +76,11 @@ class ChemiRegInterface():
         :param data_to_update: list of dictionaries
                        data = [
             {
-                'id': 'DI000016a',
+                'compound_id': 'DI000016a',
                 'supplier_id': 'ENAMINE',
             },
             {
-                'id': 'DI000016a',
+                'compound_id': 'DI000016a',
                 'supplier_id': 'ENAMINE',
             }
         :return:
@@ -91,6 +90,7 @@ class ChemiRegInterface():
             return
         # Now perform the query
         query = self.client.fetch(ids_to_update, self.project_name, 0, len(ids_to_update))
+        print(query)
         changes = self._update_data_on_ids(query,ids_as_key)
         query = self.client.save_changes(changes, self.project_name)
         return self._handle_query(query)

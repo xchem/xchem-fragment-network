@@ -76,7 +76,6 @@ class ChemiReg(object):
             objs = json['objects'][0]['refreshed_objects']
         else:
             objs = json['objects'][0]
-
         self.set_state(error, objs, True)
 
     def connect(self):
