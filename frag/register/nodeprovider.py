@@ -72,7 +72,7 @@ class NodeProvider(object):
     def configure_socket(self):
 
         self.socketIO = SocketIO('https://globalchemireg.sgc.ox.ac.uk', self.port, LoggingNamespace,
-                                 transports=['websocket'])
+                                 transports=['websocket'],needs_sslv4=True)
         time.sleep(3)
         self.socketIO.on('authenticated', self._socket_authenticated)
         self.socketIO.emit('authenticate', {'token': self.auth_token})
