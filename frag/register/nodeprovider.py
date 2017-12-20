@@ -10,7 +10,7 @@ from .SATurn import _hx_AnonObject
 
 import urllib.request
 import urllib.parse
-import json
+import json,platform
 
 import logging
 import time
@@ -70,9 +70,12 @@ class NodeProvider(object):
                 time.sleep(10)
 
     def configure_socket(self):
-
+        if  platform.system() == 'Darwin':
+            transport = 'xhr-polling'
+        else:
+            transport = 'websocket'
         self.socketIO = SocketIO('https://globalchemireg.sgc.ox.ac.uk', self.port, LoggingNamespace,
-                                 transports=['websocket'],needs_sslv4=True)
+                                     transports=[transport], needs_sslv4=True)
         time.sleep(3)
         self.socketIO.on('authenticated', self._socket_authenticated)
         self.socketIO.emit('authenticate', {'token': self.auth_token})
