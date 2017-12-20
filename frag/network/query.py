@@ -168,16 +168,3 @@ def write_picks(smiles,num_picks):
     for key in img_dict:
         out_f = open(key + ".svg", "w")
         out_f.write(img_dict[key])
-
-
-def order_frags():
-    """
-    Order fragments
-    :return:
-    """
-    # Find all fragments related to the original fragment directly (through decorate)
-
-    # Order the fragments - replace FG - by ring; addition - by ring - possibly by clustering;
-    # replace ring - from ring similarity (talk to Paul)
-
-    # return the ordered list
