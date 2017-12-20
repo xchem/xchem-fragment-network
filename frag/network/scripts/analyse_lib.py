@@ -3,8 +3,8 @@ from rdkit.Chem.rdMolDescriptors import GetMorganFingerprint
 from rdkit import Chem
 from frag.network.query import get_full_graph
 from frag.network.decorate import get_add_del_link
-import json,tqdm
-
+import json
+from tqdm import tqdm
 
 def get_sum_stats(smi_list, smiles):
     self_fp = GetMorganFingerprint(Chem.MolFromSmiles(smiles), 2)
