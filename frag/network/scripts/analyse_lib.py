@@ -17,6 +17,8 @@ def get_sum_stats(smi_list, smiles):
 def run_for_smiles(smiles):
     core_list = [item for sublist in get_add_del_link(smiles) for item in sublist]
     out_dict = get_full_graph(smiles)
+    if out_dict is None:
+        return None
     new_dict = {}
     for key in out_dict:
         smi_key = key.split("_")[0]
