@@ -805,10 +805,10 @@ if __name__ == "__main__":
  'O=C1NC=C(N2CCOCC2)C(=O)N1',
  'CC(C)COC=1C=CC(=CC1)C(=O)N2CCCC2',
  'COC=1C=CC=CC1NC(=O)C2=CC=C(C)S2']
+    res_dict = {}
     for smi in smiles_list:
-        res_dict = {}
         smi = max(smi.split("."), key=len)
-        for smi in smiles_list:
-            res_dict[smi] = run_for_smiles(smi)
+        res_dict[smi] = get_add_del_link(smi)
+        # res_dict[smi] = run_for_smiles(smi)
         with open("tot_rest.json","w") as out_f:
             out_f.write(json.dumps(res_dict))
