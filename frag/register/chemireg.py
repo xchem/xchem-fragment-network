@@ -68,8 +68,9 @@ class ChemiReg(object):
                 sleep(0.05)
 
     def _process_response(self, error, json):
-        print('Got results')
-        if 'objects' in json and 'upload_set' in json['objects'][0]:
+        if json['objects'] == None and json['error']:
+            objs = {}
+        elif 'objects' in json and 'upload_set' in json['objects'][0]:
             objs = json['objects'][0]['upload_set']
         elif 'objects' in json and 'refreshed_objects' in json['objects'][0]:
             objs = json['objects'][0]['refreshed_objects']

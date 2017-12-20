@@ -51,7 +51,7 @@ class ChemiRegInterface():
         """
         changes = []
         for compound in query['objects']:
-            data = ids_as_key[compound['id']]
+            data = ids_as_key[compound['compound_id']]
             for key in data:
                 compound[key] = data[key]
             changes.append(compound)

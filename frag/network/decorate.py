@@ -20,13 +20,14 @@ def decorate_smi(input_smi):
     # Get the list of atom Indices to replace
     out_atom_repls = [x[1] for x in mol.GetSubstructMatches(patt)]
     # Now replace with At - an produce a new mol everytime
-    new_mols = []
+    new_mols = {}
     for atom in out_atom_repls:
         rw_mol = get_mol(input_smi)
         rw_mol.ReplaceAtom(atom,Atom(85))
         newer_mol = rw_mol.GetMol()
-        new_mols.append(Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(newer_mol,isomericSmiles=True)),isomericSmiles=True))
-    return list(set(new_mols))
+        this_mol = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(newer_mol,isomericSmiles=True)),isomericSmiles=True)
+        new_mols[this_mol] = atom
+    return new_mols
 
 
 def deletion_linker_smi(input_smi):
@@ -39,7 +40,7 @@ def deletion_linker_smi(input_smi):
     nr = mol.GetRingInfo().NumRings()
     fragments = get_fragments(mol)
     out_mols = []
-    linker_mols = []
+    linker_mol_list = []
     ring_ring_splits = get_ring_ring_splits(mol)
     if ring_ring_splits:
         for ring_ring_split in ring_ring_splits:
@@ -49,7 +50,7 @@ def deletion_linker_smi(input_smi):
             if new_mol.GetRingInfo().NumRings() < nr:
                  continue
             new_mol = link_li(rebuilt_smi)
-            linker_mols.append(new_mol)
+            linker_mol_list.append(new_mol)
     for i in range(len(fragments)):
         new_list = []
         for j,item in enumerate(fragments):
@@ -64,14 +65,14 @@ def deletion_linker_smi(input_smi):
             if new_mol.GetRingInfo().NumRings() < nr:
                 continue
             new_mol = link_li(rebuilt_smi)
-            linker_mols.append(new_mol)
+            linker_mol_list.append(new_mol)
             continue
         new_mol = Chem.MolFromSmiles(rebuilt_smi)
         # If the resulting
         if new_mol.GetRingInfo().NumRings() < nr:
             continue
         out_mols.append(new_mol)
-    return (out_mols,linker_mols)
+    return out_mols,linker_mol_list
 
 def link_li(rebuilt_smi):
     mol = Chem.MolFromSmiles(rebuilt_smi)
@@ -84,10 +85,25 @@ def addition_smi(input_smi):
     smis = decorate_smi(input_smi)
     return [Chem.MolFromSmiles(x) for x in smis]
 
+def get_ring_removals(smi):
+    rw_mol = RWMol(Chem.MolFromSmiles(smi))
+    rings = rw_mol.GetRingInfo().AtomRings()
+    out_mols = {}
+    for ring in rings:
+        new_mol = Chem.MolFromSmiles(smi)
+        counter = 0
+        for atom in ring:
+            new_mol.GetAtomWithIdx(atom).SetAtomicNum(0)
+        Chem.DeleteSubstructs(new_mol, Chem.MolFromSmarts('[#0]'))
+        Chem.GetMolFrags(new_mol)
+        out_mols[Chem.MolToSmiles(new_mol,isomericSmiles=True)] = ring
+    return out_mols
+
 def get_add_del_link(smi,asSmiles=True):
     additions = addition_smi(smi)
     res = deletion_linker_smi(smi)
     linkers = res[1]
+    ring_removals = get_ring_removals(smi)
     deletions = res[0]
     if asSmiles:
         additions = [Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(x).replace("[At]","[Xe]"))) for x in additions]
