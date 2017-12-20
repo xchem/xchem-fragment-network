@@ -65,7 +65,8 @@ def deletion_linker_smi(input_smi):
             # Only consider linker replacements
             if new_mol.GetRingInfo().NumRings() < nr:
                 ring_repl_list.append(new_mol)
-            linker_mol_list.append(new_mol)
+            else:
+                linker_mol_list.append(new_mol)
             continue
         new_mol = Chem.MolFromSmiles(rebuilt_smi)
         # If the resulting
