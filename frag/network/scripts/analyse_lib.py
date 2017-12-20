@@ -806,6 +806,7 @@ if __name__ == "__main__":
  'CC(C)COC=1C=CC(=CC1)C(=O)N2CCCC2',
  'COC=1C=CC=CC1NC(=O)C2=CC=C(C)S2']
     res_dict = {}
+
     for smi in tqdm(smiles_list):
         smi = max(smi.split("."), key=len)
         res_dict[smi] = run_for_smiles(smi)

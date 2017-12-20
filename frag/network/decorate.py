@@ -41,6 +41,7 @@ def deletion_linker_smi(input_smi):
     fragments = get_fragments(mol)
     out_mols = []
     linker_mol_list = []
+    ring_repl_list = []
     ring_ring_splits = get_ring_ring_splits(mol)
     if ring_ring_splits:
         for ring_ring_split in ring_ring_splits:
@@ -61,10 +62,9 @@ def deletion_linker_smi(input_smi):
         rebuilt_smi = rebuild_smi(new_list,ring_ring=False)
         if "." in rebuilt_smi:
             new_mol = Chem.MolFromSmiles(rebuilt_smi)
-            rebuilt_smi = rebuilt_smi.replace("Xe","Li")
+            # Only consider linker replacements
             if new_mol.GetRingInfo().NumRings() < nr:
-                continue
-            new_mol = link_li(rebuilt_smi)
+                ring_repl_list.append(new_mol)
             linker_mol_list.append(new_mol)
             continue
         new_mol = Chem.MolFromSmiles(rebuilt_smi)
@@ -72,7 +72,7 @@ def deletion_linker_smi(input_smi):
         if new_mol.GetRingInfo().NumRings() < nr:
             continue
         out_mols.append(new_mol)
-    return out_mols,linker_mol_list
+    return out_mols,linker_mol_list,ring_repl_list
 
 def link_li(rebuilt_smi):
     mol = Chem.MolFromSmiles(rebuilt_smi)
@@ -103,10 +103,11 @@ def get_add_del_link(smi,asSmiles=True):
     additions = addition_smi(smi)
     res = deletion_linker_smi(smi)
     linkers = res[1]
-    ring_removals = get_ring_removals(smi)
+    ring_removals = res[2]
     deletions = res[0]
     if asSmiles:
         additions = [Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(x).replace("[At]","[Xe]"))) for x in additions]
         deletions = [Chem.MolToSmiles(x) for x in deletions]
-        linkers = [Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(x).replace("[Li]~[Li]","[Xe].[Xe]"))) for x in linkers]
-    return [additions,deletions,linkers]
+        linkers = [Chem.MolToSmiles(x) for x in linkers]
+        ring_removals = [Chem.MolToSmiles(x) for x in ring_removals]
+    return [additions,deletions,linkers,ring_removals]
