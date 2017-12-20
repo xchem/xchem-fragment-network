@@ -808,7 +808,6 @@ if __name__ == "__main__":
     res_dict = {}
     for smi in smiles_list:
         smi = max(smi.split("."), key=len)
-        res_dict[smi] = get_add_del_link(smi)
-        # res_dict[smi] = run_for_smiles(smi)
+        res_dict[smi] = run_for_smiles(smi)
         with open("tot_rest.json","w") as out_f:
             out_f.write(json.dumps(res_dict))
