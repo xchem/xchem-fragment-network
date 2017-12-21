@@ -111,4 +111,5 @@ def get_add_del_link(smi,asSmiles=True):
         deletions = [Chem.MolToSmiles(x) for x in deletions]
         linkers = [Chem.MolToSmiles(x) for x in linkers]
         ring_removals = [Chem.MolToSmiles(x) for x in ring_removals]
-    return [additions,deletions,linkers,ring_removals]
+        linkers.extend(ring_removals)
+    return [additions,deletions,linkers]
